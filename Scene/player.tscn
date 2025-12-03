@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://2rfx1hshs6rn"]
+
+[ext_resource type="Script" uid="uid://bkq3e1gvs8fy4" path="res://Scripts/player.gd" id="1_kelma"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_j47wa"]
+size = Vector2(40, 60)
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+script = ExtResource("1_kelma")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_j47wa")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = -20.0
+offset_top = -30.0
+offset_right = 20.0
+offset_bottom = 30.0

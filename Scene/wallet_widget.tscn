@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3 uid="uid://c14eyyowanixa"]
+
+[ext_resource type="FontFile" uid="uid://bqdpte3m2v88p" path="res://Assets/Higher Jump.ttf" id="1_yfo45"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_pc0x0"]
+font = ExtResource("1_yfo45")
+font_size = 10
+
+[node name="WalletWidget" type="Panel"]
+offset_left = 950.0
+offset_top = 20.0
+offset_right = 1250.0
+offset_bottom = 105.0
+
+[node name="WalletStatus" type="Label" parent="."]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 211.0
+offset_bottom = 38.0
+text = "No Wallet Connected"
+label_settings = SubResource("LabelSettings_pc0x0")
+horizontal_alignment = 1
+
+[node name="WalletButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 40.0
+offset_right = 229.0
+offset_bottom = 86.0
+theme_override_fonts/font = ExtResource("1_yfo45")
+theme_override_font_sizes/font_size = 14
+text = "CONNECT WALLET"

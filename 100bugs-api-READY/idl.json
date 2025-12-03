@@ -1,0 +1,67 @@
+{
+  "address": "AuXF95nT7WS865AzQpuj3os9r6DjTYY9ekh4mGgG6gfL",
+  "metadata": {
+    "name": "cmpgn",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "initialize",
+      "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
+      "accounts": [
+        { "name": "game_authority", "writable": true, "signer": true },
+        { "name": "campaign", "writable": true },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [{ "name": "campaign_id", "type": "u8" }]
+    },
+    {
+      "name": "create_collection",
+      "discriminator": [156, 251, 92, 54, 233, 2, 16, 82],
+      "accounts": [
+        { "name": "creator", "writable": true, "signer": true },
+        { "name": "collection", "writable": true, "signer": true },
+        { "name": "collection_authority", "writable": true },
+        { "name": "campaign", "writable": true },
+        { "name": "core_program" },
+        { "name": "system_program" }
+      ],
+      "args": [
+        { "name": "campaign_id", "type": "u8" },
+        { "name": "args", "type": { "defined": { "name": "CreateCollectionArgs" } } }
+      ]
+    },
+    {
+      "name": "mint_nft",
+      "discriminator": [211, 57, 6, 167, 15, 219, 35, 251],
+      "accounts": [
+        { "name": "minter", "writable": true, "signer": true },
+        { "name": "asset", "writable": true, "signer": true },
+        { "name": "collection", "writable": true },
+        { "name": "collection_authority" },
+        { "name": "core_program" },
+        { "name": "system_program" }
+      ],
+      "args": [
+        { "name": "bug_id", "type": "u8" },
+        { "name": "name", "type": "string" },
+        { "name": "nft_uri", "type": "string" }
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "CreateCollectionArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "name", "type": "string" },
+          { "name": "uri", "type": "string" },
+          { "name": "nft_name", "type": "string" },
+          { "name": "nft_uri", "type": "string" }
+        ]
+      }
+    }
+  ]
+}

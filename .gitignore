@@ -1,0 +1,16 @@
+# Godot
+.import/
+export_presets.cfg
+export.cfg
+.cache/
+tmp/
+bin/
+
+# System
+.DS_Store
+
+# Logs
+*.log
+
+# Node projects
+node_modules/
