@@ -3,63 +3,1080 @@
   "metadata": {
     "name": "cmpgn",
     "version": "0.1.0",
-    "spec": "0.1.0"
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "initialize",
-      "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
-      "accounts": [
-        { "name": "game_authority", "writable": true, "signer": true },
-        { "name": "campaign", "writable": true },
-        { "name": "system_program", "address": "11111111111111111111111111111111" }
-      ],
-      "args": [{ "name": "campaign_id", "type": "u8" }]
-    },
-    {
       "name": "create_collection",
-      "discriminator": [156, 251, 92, 54, 233, 2, 16, 82],
+      "discriminator": [
+        156,
+        251,
+        92,
+        54,
+        233,
+        2,
+        16,
+        82
+      ],
       "accounts": [
-        { "name": "creator", "writable": true, "signer": true },
-        { "name": "collection", "writable": true, "signer": true },
-        { "name": "collection_authority", "writable": true },
-        { "name": "campaign", "writable": true },
-        { "name": "core_program" },
-        { "name": "system_program" }
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection_authority",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "collection"
+              }
+            ]
+          }
+        },
+        {
+          "name": "campaign",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  109,
+                  112,
+                  97,
+                  105,
+                  103,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "core_program",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
       ],
       "args": [
-        { "name": "campaign_id", "type": "u8" },
-        { "name": "args", "type": { "defined": { "name": "CreateCollectionArgs" } } }
+        {
+          "name": "campaign_id",
+          "type": "u8"
+        },
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "CreateCollectionArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "get_campaign_stats",
+      "discriminator": [
+        50,
+        155,
+        200,
+        10,
+        196,
+        43,
+        179,
+        25
+      ],
+      "accounts": [
+        {
+          "name": "game_authority",
+          "signer": true,
+          "relations": [
+            "campaign"
+          ]
+        },
+        {
+          "name": "campaign",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  109,
+                  112,
+                  97,
+                  105,
+                  103,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "campaign_id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "get_daily_bug",
+      "discriminator": [
+        169,
+        229,
+        236,
+        9,
+        111,
+        118,
+        129,
+        103
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "get_player_progress",
+      "discriminator": [
+        179,
+        176,
+        80,
+        249,
+        28,
+        115,
+        222,
+        0
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "player_progress",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  103,
+                  114,
+                  101,
+                  115,
+                  115
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              },
+              {
+                "kind": "account",
+                "path": "player"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "campaign_id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "has_completed_bug",
+      "discriminator": [
+        195,
+        82,
+        65,
+        216,
+        87,
+        113,
+        56,
+        230
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "player_progress",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  103,
+                  114,
+                  101,
+                  115,
+                  115
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              },
+              {
+                "kind": "account",
+                "path": "player"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "campaign_id",
+          "type": "u8"
+        },
+        {
+          "name": "bug_id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "game_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "campaign",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  109,
+                  112,
+                  97,
+                  105,
+                  103,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "campaign_id",
+          "type": "u8"
+        }
       ]
     },
     {
       "name": "mint_nft",
-      "discriminator": [211, 57, 6, 167, 15, 219, 35, 251],
+      "discriminator": [
+        211,
+        57,
+        6,
+        167,
+        15,
+        219,
+        35,
+        251
+      ],
       "accounts": [
-        { "name": "minter", "writable": true, "signer": true },
-        { "name": "asset", "writable": true, "signer": true },
-        { "name": "collection", "writable": true },
-        { "name": "collection_authority" },
-        { "name": "core_program" },
-        { "name": "system_program" }
+        {
+          "name": "player",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "asset",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "collection_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "collection"
+              }
+            ]
+          }
+        },
+        {
+          "name": "campaign_completion",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  109,
+                  112,
+                  108,
+                  101,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              },
+              {
+                "kind": "account",
+                "path": "player"
+              },
+              {
+                "kind": "arg",
+                "path": "bug_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "core_program",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
       ],
       "args": [
-        { "name": "bug_id", "type": "u8" },
-        { "name": "name", "type": "string" },
-        { "name": "nft_uri", "type": "string" }
+        {
+          "name": "campaign_id",
+          "type": "u8"
+        },
+        {
+          "name": "bug_id",
+          "type": "u8"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "nft_uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "record_campaign_completion",
+      "discriminator": [
+        152,
+        123,
+        124,
+        51,
+        143,
+        145,
+        181,
+        179
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "campaign_completion",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  109,
+                  112,
+                  108,
+                  101,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              },
+              {
+                "kind": "account",
+                "path": "player"
+              },
+              {
+                "kind": "arg",
+                "path": "bug_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "player_progress",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  103,
+                  114,
+                  101,
+                  115,
+                  115
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              },
+              {
+                "kind": "account",
+                "path": "player"
+              }
+            ]
+          }
+        },
+        {
+          "name": "campaign",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  109,
+                  112,
+                  97,
+                  105,
+                  103,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "campaign_id",
+          "type": "u8"
+        },
+        {
+          "name": "bug_id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "start_campaign",
+      "discriminator": [
+        229,
+        59,
+        6,
+        209,
+        253,
+        163,
+        39,
+        124
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "campaign_completion",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  109,
+                  112,
+                  108,
+                  101,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              },
+              {
+                "kind": "account",
+                "path": "player"
+              },
+              {
+                "kind": "arg",
+                "path": "bug_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "campaign",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  109,
+                  112,
+                  97,
+                  105,
+                  103,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "campaign_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "campaign_id",
+          "type": "u8"
+        },
+        {
+          "name": "bug_id",
+          "type": "u8"
+        }
       ]
     }
   ],
+  "accounts": [
+    {
+      "name": "Campaign",
+      "discriminator": [
+        50,
+        40,
+        49,
+        11,
+        157,
+        220,
+        229,
+        192
+      ]
+    },
+    {
+      "name": "CampaignCompletion",
+      "discriminator": [
+        251,
+        113,
+        136,
+        122,
+        32,
+        135,
+        53,
+        220
+      ]
+    },
+    {
+      "name": "CollectionAuthority",
+      "discriminator": [
+        209,
+        221,
+        189,
+        233,
+        183,
+        32,
+        247,
+        91
+      ]
+    },
+    {
+      "name": "PlayerProgress",
+      "discriminator": [
+        58,
+        72,
+        112,
+        88,
+        90,
+        205,
+        230,
+        68
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "CampaignStatsEvent",
+      "discriminator": [
+        45,
+        190,
+        23,
+        43,
+        130,
+        248,
+        193,
+        94
+      ]
+    },
+    {
+      "name": "CompletedBugEvent",
+      "discriminator": [
+        231,
+        188,
+        74,
+        220,
+        141,
+        4,
+        147,
+        168
+      ]
+    },
+    {
+      "name": "DailyBugEvent",
+      "discriminator": [
+        15,
+        218,
+        140,
+        113,
+        173,
+        121,
+        7,
+        197
+      ]
+    },
+    {
+      "name": "PlayerProgressEvent",
+      "discriminator": [
+        119,
+        170,
+        223,
+        249,
+        107,
+        17,
+        10,
+        70
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidCampaignId",
+      "msg": "Invalid Campaign Id"
+    },
+    {
+      "code": 6001,
+      "name": "CampaignNotStarted",
+      "msg": "Campaign not initialized"
+    },
+    {
+      "code": 6002,
+      "name": "CampaignAlreadyCompleted",
+      "msg": "Campaign already completed"
+    },
+    {
+      "code": 6003,
+      "name": "CampaignNotCompleted",
+      "msg": "Campaign not completed"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidBugId",
+      "msg": "Invalid Bug Id"
+    },
+    {
+      "code": 6005,
+      "name": "NotAuthorized",
+      "msg": "The payer is not the program's upgrade authority."
+    },
+    {
+      "code": 6006,
+      "name": "CollectionAlreadyInitialized",
+      "msg": "The collection has already been initialized."
+    },
+    {
+      "code": 6007,
+      "name": "AssetAlreadyInitialized",
+      "msg": "The asset has already been initialized."
+    },
+    {
+      "code": 6008,
+      "name": "CollectionNotInitialized",
+      "msg": "The collection is not initialized."
+    },
+    {
+      "code": 6009,
+      "name": "InvalidCollection",
+      "msg": "The collection is invalid."
+    },
+    {
+      "code": 6010,
+      "name": "UnauthorizedPlayer",
+      "msg": "Unauthorized Player."
+    },
+    {
+      "code": 6011,
+      "name": "NftAlreadyMinted",
+      "msg": "NFT already minted"
+    }
+  ],
   "types": [
+    {
+      "name": "Campaign",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "campaign_id",
+            "type": "u8"
+          },
+          {
+            "name": "total_completions",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CampaignCompletion",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "player",
+            "type": "pubkey"
+          },
+          {
+            "name": "campaign_id",
+            "type": "u8"
+          },
+          {
+            "name": "campaign_start",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "campaign_end",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "bug_id",
+            "type": "u8"
+          },
+          {
+            "name": "nft_mint_address",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CampaignStatsEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "campaign_id",
+            "type": "u8"
+          },
+          {
+            "name": "total_completions",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CollectionAuthority",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "collection",
+            "type": "pubkey"
+          },
+          {
+            "name": "nft_name",
+            "type": "string"
+          },
+          {
+            "name": "nft_uri",
+            "type": "string"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompletedBugEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "player",
+            "type": "pubkey"
+          },
+          {
+            "name": "campaign_id",
+            "type": "u8"
+          },
+          {
+            "name": "bug_id",
+            "type": "u8"
+          },
+          {
+            "name": "completed",
+            "type": "bool"
+          }
+        ]
+      }
+    },
     {
       "name": "CreateCollectionArgs",
       "type": {
         "kind": "struct",
         "fields": [
-          { "name": "name", "type": "string" },
-          { "name": "uri", "type": "string" },
-          { "name": "nft_name", "type": "string" },
-          { "name": "nft_uri", "type": "string" }
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "nft_name",
+            "type": "string"
+          },
+          {
+            "name": "nft_uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DailyBugEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bug_id",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlayerProgress",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "player",
+            "type": "pubkey"
+          },
+          {
+            "name": "campaign_id",
+            "type": "u8"
+          },
+          {
+            "name": "completed_bugs",
+            "type": "bytes"
+          },
+          {
+            "name": "total_completed_bugs",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlayerProgressEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "player",
+            "type": "pubkey"
+          },
+          {
+            "name": "campaign_id",
+            "type": "u8"
+          },
+          {
+            "name": "completed_bugs",
+            "type": "bytes"
+          },
+          {
+            "name": "total_completed_bugs",
+            "type": "u8"
+          }
         ]
       }
     }

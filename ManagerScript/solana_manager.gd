@@ -2,6 +2,9 @@ extends Node
 
 # API Configuration
 const API_URL = "http://localhost:3000"
+const COLLECTION_ADDRESS = "3ZQPh5QRLuGfNhY3hbCC8e5AYiLEaWaFoYVxdvTpz9gi"
+
+# ==================== CAMPAIGN MODE ====================
 
 # Campaign NFT minting
 func mint_campaign_nft(bug_id: int, metadata: Dictionary):
@@ -16,7 +19,7 @@ func mint_campaign_nft(bug_id: int, metadata: Dictionary):
 	print("  - Description: ", metadata.get("description", ""))
 	print("  - Image URI: ", metadata.get("image_uri", ""))
 	print("  - Difficulty: ", metadata.get("difficulty", "Unknown"))
-	print("  - Timestamp: ", Time.get_datetime_string_from_system())
+	print("  - Collection: ", COLLECTION_ADDRESS)
 	
 	# Create HTTP request
 	var http = HTTPRequest.new()
@@ -30,7 +33,8 @@ func mint_campaign_nft(bug_id: int, metadata: Dictionary):
 		"name": metadata.get("name", "Unknown Bug"),
 		"description": metadata.get("description", ""),
 		"imageUri": metadata.get("image_uri", ""),
-		"difficulty": metadata.get("difficulty", "Unknown")
+		"difficulty": metadata.get("difficulty", "Unknown"),
+		"collectionAddress": COLLECTION_ADDRESS
 	}
 	
 	var headers = ["Content-Type: application/json"]
@@ -64,6 +68,7 @@ func _on_mint_nft_completed(result, response_code, headers, body):
 			if response.get("success", false):
 				print("✅ Campaign NFT minted successfully!")
 				print("   NFT Address: ", response.get("nftAddress", ""))
+				print("   Transaction: ", response.get("transaction", ""))
 			else:
 				print("❌ Mint failed: ", response.get("error", "Unknown error"))
 		else:
@@ -72,66 +77,10 @@ func _on_mint_nft_completed(result, response_code, headers, body):
 		print("❌ API returned error code: ", response_code)
 		print("   Response: ", body.get_string_from_utf8())
 
-# Daily challenge NFT minting
-func mint_daily_challenge_nft(bug_id: int, completion_time: float, tier: String):
-	if not GameState.wallet_connected:
-		print("ERROR: No wallet connected")
-		return false
-	
-	print("🏆 Minting Daily Challenge NFT:")
-	print("  - Wallet: ", GameState.wallet_address)
-	print("  - Bug #", bug_id)
-	print("  - Time: ", completion_time, "s")
-	print("  - Tier: ", tier)
-	
-	# TODO: Add daily challenge endpoint to API
-	# For now, just simulate
-	await get_tree().create_timer(1.0).timeout
-	print("✅ Daily Challenge NFT minted successfully!")
-	return true
-
-# Get today's daily challenge bug
-func get_todays_bug() -> int:
-	print("🎲 Fetching today's bug from VRF...")
-	
-	# TODO: Add VRF endpoint to API
-	await get_tree().create_timer(0.5).timeout
-	var random_bug = (randi() % 20) + 1
-	print("✅ Today's bug: #", random_bug)
-	return random_bug
-
-# Submit daily challenge completion
-func submit_daily_completion(bug_id: int, completion_time: float):
-	if not GameState.wallet_connected:
-		print("ERROR: No wallet connected")
-		return
-	
-	print("📊 Submitting daily completion:")
-	print("  - Bug #", bug_id)
-	print("  - Time: ", completion_time, "s")
-	
-	# TODO: Add leaderboard endpoint to API
-	await get_tree().create_timer(0.5).timeout
-	print("✅ Completion submitted to leaderboard!")
-
-# Get daily challenge leaderboard
-func get_daily_leaderboard(bug_id: int) -> Array:
-	print("📋 Fetching leaderboard for bug #", bug_id)
-	
-	# TODO: Add leaderboard endpoint to API
-	await get_tree().create_timer(0.5).timeout
-	var fake_leaderboard = [
-		{"wallet": "7xKX123...456", "time": 45.2, "rank": 1},
-		{"wallet": "9zYW789...012", "time": 52.8, "rank": 2},
-		{"wallet": "3aBC345...678", "time": 61.5, "rank": 3}
-	]
-	print("✅ Leaderboard fetched: ", fake_leaderboard.size(), " entries")
-	return fake_leaderboard
-
 # Check if player has completed a bug in campaign
 func has_completed_bug(bug_id: int) -> bool:
 	if not GameState.wallet_connected:
-		return false
+		return GameState.is_bug_completed(bug_id)
 	
 	print("🔍 Checking if bug #", bug_id, " is completed via API...")
 	
@@ -145,7 +94,6 @@ func has_completed_bug(bug_id: int) -> bool:
 	if error != OK:
 		print("❌ HTTP Request failed: ", error)
 		http.queue_free()
-		# Fallback to local state
 		return GameState.is_bug_completed(bug_id)
 	
 	# Wait for response
@@ -158,7 +106,185 @@ func has_completed_bug(bug_id: int) -> bool:
 		
 		if parse_result == OK:
 			var data = json.data
-			return data.get("completed", false)
+			var completed = data.get("completed", false)
+			print("   Result: ", "Completed" if completed else "Not completed")
+			return completed
 	
 	# Fallback to local state
 	return GameState.is_bug_completed(bug_id)
+
+# Get player progress for entire campaign
+func get_player_progress():
+	if not GameState.wallet_connected:
+		print("ERROR: No wallet connected")
+		return null
+	
+	print("📊 Getting player progress from API...")
+	
+	var http = HTTPRequest.new()
+	add_child(http)
+	
+	var url = API_URL + "/player-progress/" + GameState.wallet_address
+	var error = http.request(url)
+	
+	if error != OK:
+		print("❌ HTTP Request failed: ", error)
+		http.queue_free()
+		return null
+	
+	var response = await http.request_completed
+	http.queue_free()
+	
+	if response[1] == 200:
+		var json = JSON.new()
+		var parse_result = json.parse(response[3].get_string_from_utf8())
+		
+		if parse_result == OK:
+			var data = json.data
+			print("✅ Player progress retrieved")
+			return data.get("progress")
+	
+	print("❌ Failed to get player progress")
+	return null
+
+# Get campaign statistics
+func get_campaign_stats(campaign_id: int = 2):
+	print("📊 Getting campaign stats...")
+	
+	var http = HTTPRequest.new()
+	add_child(http)
+	
+	var url = API_URL + "/campaign-stats/" + str(campaign_id)
+	var error = http.request(url)
+	
+	if error != OK:
+		print("❌ HTTP Request failed: ", error)
+		http.queue_free()
+		return null
+	
+	var response = await http.request_completed
+	http.queue_free()
+	
+	if response[1] == 200:
+		var json = JSON.new()
+		var parse_result = json.parse(response[3].get_string_from_utf8())
+		
+		if parse_result == OK:
+			var data = json.data
+			print("✅ Campaign stats retrieved")
+			return data.get("stats")
+	
+	print("❌ Failed to get campaign stats")
+	return null
+
+# ==================== DAILY CHALLENGE ====================
+
+# Get today's daily challenge bug
+func get_todays_bug() -> int:
+	print("🎲 Fetching today's bug from API...")
+	
+	var http = HTTPRequest.new()
+	add_child(http)
+	
+	var url = API_URL + "/daily-bug"
+	var error = http.request(url)
+	
+	if error != OK:
+		print("❌ HTTP Request failed: ", error)
+		http.queue_free()
+		# Fallback to local random
+		var random_bug = (randi() % 20) + 1
+		print("⚠️  Using fallback random bug: #", random_bug)
+		return random_bug
+	
+	var response = await http.request_completed
+	http.queue_free()
+	
+	if response[1] == 200:
+		var json = JSON.new()
+		var parse_result = json.parse(response[3].get_string_from_utf8())
+		
+		if parse_result == OK:
+			var data = json.data
+			var bug_id = data.get("bugId", 1)
+			print("✅ Today's bug: #", bug_id)
+			return bug_id
+	
+	# Fallback
+	var random_bug = (randi() % 20) + 1
+	print("⚠️  Using fallback random bug: #", random_bug)
+	return random_bug
+
+# Daily challenge NFT minting
+func mint_daily_challenge_nft(bug_id: int, completion_time: float, tier: String):
+	if not GameState.wallet_connected:
+		print("ERROR: No wallet connected")
+		return false
+	
+	print("🏆 Minting Daily Challenge NFT:")
+	print("  - Wallet: ", GameState.wallet_address)
+	print("  - Bug #", bug_id)
+	print("  - Time: ", completion_time, "s")
+	print("  - Tier: ", tier)
+	
+	# TODO: Add daily challenge NFT endpoint when dev implements it
+	# For now, just simulate success
+	await get_tree().create_timer(1.0).timeout
+	print("✅ Daily Challenge NFT minted successfully!")
+	return true
+
+# Submit daily challenge completion
+func submit_daily_completion(bug_id: int, completion_time: float):
+	if not GameState.wallet_connected:
+		print("ERROR: No wallet connected")
+		return
+	
+	print("📊 Submitting daily completion:")
+	print("  - Bug #", bug_id)
+	print("  - Time: ", completion_time, "s")
+	
+	# TODO: Add leaderboard endpoint when dev implements it
+	await get_tree().create_timer(0.5).timeout
+	print("✅ Completion submitted to leaderboard!")
+
+# Get daily challenge leaderboard
+func get_daily_leaderboard(bug_id: int) -> Array:
+	print("📋 Fetching leaderboard for bug #", bug_id)
+	
+	# TODO: Add leaderboard endpoint when dev implements it
+	# For now, return mock data
+	await get_tree().create_timer(0.5).timeout
+	var fake_leaderboard = [
+		{"wallet": "7xKX123...456", "time": 45.2, "rank": 1},
+		{"wallet": "9zYW789...012", "time": 52.8, "rank": 2},
+		{"wallet": "3aBC345...678", "time": 61.5, "rank": 3}
+	]
+	print("✅ Leaderboard fetched: ", fake_leaderboard.size(), " entries")
+	return fake_leaderboard
+
+# ==================== HELPER FUNCTIONS ====================
+
+# Test API connection
+func test_connection() -> bool:
+	print("🔌 Testing API connection...")
+	
+	var http = HTTPRequest.new()
+	add_child(http)
+	
+	var url = API_URL + "/health"
+	var error = http.request(url)
+	
+	if error != OK:
+		print("❌ Connection test failed: ", error)
+		http.queue_free()
+		return false
+	
+	var response = await http.request_completed
+	http.queue_free()
+	
+	if response[1] == 200:
+		print("✅ API connection successful!")
+		return true
+	else:
+		print("❌ API returned error code: ", response[1])
+		return false

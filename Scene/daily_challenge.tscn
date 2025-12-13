@@ -1,0 +1,79 @@
+[gd_scene load_steps=7 format=3 uid="uid://dte7ugh1x5i6w"]
+
+[ext_resource type="FontFile" uid="uid://bqdpte3m2v88p" path="res://Assets/Higher Jump.ttf" id="1_goeyk"]
+[ext_resource type="Script" uid="uid://bdvadm0a0x40a" path="res://Scripts/daily_challenge.gd" id="1_x0sqh"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_x0sqh"]
+font = ExtResource("1_goeyk")
+font_size = 50
+
+[sub_resource type="LabelSettings" id="LabelSettings_esed5"]
+font = ExtResource("1_goeyk")
+
+[sub_resource type="LabelSettings" id="LabelSettings_2avyh"]
+font = ExtResource("1_goeyk")
+font_size = 8
+
+[sub_resource type="LabelSettings" id="LabelSettings_1xxem"]
+font = ExtResource("1_goeyk")
+
+[node name="DailyChallenge" type="Node2D"]
+script = ExtResource("1_x0sqh")
+metadata/_edit_vertical_guides_ = [626.0]
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 721.0
+color = Color(0.15487596, 0.154876, 0.15487596, 1)
+
+[node name="TitleLabel" type="Label" parent="."]
+offset_left = 262.0
+offset_top = 3.0
+offset_right = 976.0
+offset_bottom = 137.0
+text = "DAILY CHALLENGE"
+label_settings = SubResource("LabelSettings_x0sqh")
+
+[node name="BugTitle" type="Label" parent="."]
+offset_left = 606.0
+offset_top = 139.0
+offset_right = 646.0
+offset_bottom = 183.0
+label_settings = SubResource("LabelSettings_esed5")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BugDescription" type="Label" parent="."]
+offset_left = 606.0
+offset_top = 216.0
+offset_right = 646.0
+offset_bottom = 239.0
+label_settings = SubResource("LabelSettings_2avyh")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayButton" type="Button" parent="."]
+offset_left = 507.0
+offset_top = 445.0
+offset_right = 770.0
+offset_bottom = 539.0
+theme_override_fonts/font = ExtResource("1_goeyk")
+theme_override_font_sizes/font_size = 32
+text = "PLAY NOW"
+
+[node name="BackButton" type="Button" parent="."]
+offset_left = 615.0
+offset_top = 593.0
+offset_right = 690.0
+offset_bottom = 645.0
+theme_override_fonts/font = ExtResource("1_goeyk")
+text = "BACK"
+
+[node name="CountdownLabel" type="Label" parent="."]
+offset_left = 606.0
+offset_top = 359.0
+offset_right = 646.0
+offset_bottom = 403.0
+label_settings = SubResource("LabelSettings_1xxem")
+horizontal_alignment = 1
+vertical_alignment = 1
