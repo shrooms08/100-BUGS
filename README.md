@@ -266,7 +266,7 @@ Every bug is:
 Benin City, Nigeria
 Solana Hackathon 2024
 
-* Twitter: [@YourHandle](#)
+* Twitter: [@shroomsgotsol](#)
 
 ---
 
@@ -284,6 +284,6 @@ Solana Hackathon 2024
 
 **Built with ❤️ for Solana Hackathon 2024**
 
-[⭐ Star this repo](https://github.com/shrooms08/100-BUGS) | [🐦 Follow on Twitter](#)
+[⭐ Star this repo](https://github.com/shrooms08/100-BUGS) | [🐦 Follow on Twitter: @100bugsonsol](#)
 
 </div>
