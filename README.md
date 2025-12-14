@@ -6,7 +6,7 @@
 
 A puzzle-platformer that flips game development on its head. Instead of fixing bugs, players must master and exploit them to progress. Every bug conquered mints an NFT on Solana.
 
-🎮 **[Play Live Demo](#)** | 📺 **[Watch Demo Video](#)** | 🐦 **[Follow Development](#)**
+🎮 **[Play Live Demo](https://shroomsgotsol.itch.io/100bugs)** | 📺 **[Watch Demo Video](https://x.com/100bugsonsol/status/1999610849585971615)** | 🐦 **[Follow Development](#x.com/100bugsonsol)**
 
 ---
 
