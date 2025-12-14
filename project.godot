@@ -20,12 +20,15 @@ config/icon="res://icon.svg"
 GameState="*res://ManagerScript/game_state.gd"
 SolanaManager="*res://ManagerScript/solana_manager.gd"
 BugData="*res://ManagerScript/bug_data.gd"
+MusicManager="*res://Scene/music_manager.tscn"
+SfxManager="*res://Scene/sfx_manager.tscn"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
-window/size/mode=3
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [rendering]
 
