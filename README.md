@@ -1,6 +1,7 @@
 # 100 Bugs You Must Exploit
 
-![Game Banner](assets/banner.png)
+![Game Banner](![Uploading Screenshot 2025-12-14 at 2.43.32 pm.png…]()
+)
 
 > **What if bugs weren't mistakes, but the entire game?**
 
