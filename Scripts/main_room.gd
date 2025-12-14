@@ -77,6 +77,8 @@ func update_bug_label():
 	$UI/BugLabel.text = "Bug #%d: %s" % [GameState.current_bug, bug_names.get(GameState.current_bug, "Unknown")]
 
 func _ready():
+	MusicManager.play_gameplay_music()
+	
 	$ButtonPlatform/Button.pressed.connect(_on_button_pressed)
 	$ButtonPlatform/Button.player_entered_button.connect(_on_player_entered_button)
 	$ButtonPlatform/Button.player_exited_button.connect(_on_player_exited_button)

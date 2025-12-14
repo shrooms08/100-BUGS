@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://dbxy5dye6toio"]
+
+[ext_resource type="Script" uid="uid://c33uj3336g4be" path="res://Scripts/sfx_manager.gd" id="1_a4hjn"]
+[ext_resource type="AudioStream" uid="uid://dv88ncqj041qp" path="res://Sounds/sfx/ButtonClick.wav" id="2_r8jai"]
+
+[node name="SFXManager" type="Node"]
+script = ExtResource("1_a4hjn")
+
+[node name="ButtonClick" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_r8jai")
+volume_db = -5.0

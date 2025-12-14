@@ -1,6 +1,8 @@
 extends Node2D
 
 func _ready():
+	MusicManager.play_menu_music()
+	
 	# Test API connection when game starts
 	print("🚀 Starting game...")
 	
@@ -32,14 +34,19 @@ func _ready():
 	update_daily_ui()  # NEW
 
 func _on_start_pressed():
+	$StartButton/ClickSound.play()
+	await $StartButton/ClickSound.finished
 	get_tree().change_scene_to_file("res://Scene/level_select.tscn")
 
 # NEW: Daily Challenge
 func _on_daily_pressed():
+	$DailyButton/ClickSound.play()
+	await $DailyButton/ClickSound.finished
 	print("🎲 Opening Daily Challenge...")
 	get_tree().change_scene_to_file("res://Scene/daily_challenge.tscn")
 
 func _on_wallet_button_pressed():
+	$WalletPanel/WalletButton/ClickSound.play()
 	if GameState.wallet_connected:
 		disconnect_wallet()
 	else:

@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://wfk7ky7kk2l8"]
+[gd_scene load_steps=6 format=3 uid="uid://wfk7ky7kk2l8"]
 
 [ext_resource type="Script" uid="uid://dfl1botbbilhg" path="res://Scripts/main_menu.gd" id="1_87ipw"]
 [ext_resource type="FontFile" uid="uid://bqdpte3m2v88p" path="res://Assets/Higher Jump.ttf" id="2_hii65"]
+[ext_resource type="AudioStream" uid="uid://dv88ncqj041qp" path="res://Sounds/sfx/ButtonClick.wav" id="3_hii65"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_kqsxi"]
 font = ExtResource("2_hii65")
@@ -37,6 +38,10 @@ theme_override_fonts/font = ExtResource("2_hii65")
 theme_override_font_sizes/font_size = 20
 text = "START CAMPAIGN"
 
+[node name="ClickSound" type="AudioStreamPlayer" parent="StartButton"]
+stream = ExtResource("3_hii65")
+volume_db = -5.0
+
 [node name="DailyButton" type="Button" parent="."]
 offset_left = 524.0
 offset_top = 520.0
@@ -44,6 +49,10 @@ offset_right = 761.0
 offset_bottom = 572.0
 theme_override_fonts/font = ExtResource("2_hii65")
 text = "Daily Challenge"
+
+[node name="ClickSound" type="AudioStreamPlayer" parent="DailyButton"]
+stream = ExtResource("3_hii65")
+volume_db = -5.0
 
 [node name="Label" type="Label" parent="."]
 offset_left = 499.0
@@ -80,3 +89,7 @@ offset_bottom = 86.0
 theme_override_fonts/font = ExtResource("2_hii65")
 theme_override_font_sizes/font_size = 14
 text = "CONNECT WALLET"
+
+[node name="ClickSound" type="AudioStreamPlayer" parent="WalletPanel/WalletButton"]
+stream = ExtResource("3_hii65")
+volume_db = -5.0
