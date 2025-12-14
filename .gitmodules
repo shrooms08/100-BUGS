@@ -1,0 +1,3 @@
+[submodule "cmpgn"]
+	path = cmpgn
+	url = https://github.com/amxrac/cmpgn.git
