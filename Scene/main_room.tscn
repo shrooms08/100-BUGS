@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://cu1ki33hfpate"]
+[gd_scene load_steps=22 format=3 uid="uid://cu1ki33hfpate"]
 
 [ext_resource type="PackedScene" uid="uid://2rfx1hshs6rn" path="res://Scene/player.tscn" id="1_1nxxk"]
 [ext_resource type="Script" uid="uid://cjlfpd4sbydp4" path="res://Scripts/main_room.gd" id="1_d82uo"]
@@ -8,6 +8,8 @@
 [ext_resource type="Texture2D" uid="uid://c2a5lfpii3kxb" path="res://Assets/platform  (20251216033825).png" id="3_j86dn"]
 [ext_resource type="PackedScene" uid="uid://qgkp6r76te3w" path="res://Scene/spikes.tscn" id="5_rl3wi"]
 [ext_resource type="FontFile" uid="uid://bqdpte3m2v88p" path="res://Assets/Higher Jump.ttf" id="6_clytc"]
+[ext_resource type="Texture2D" uid="uid://dfe743tvya2j6" path="res://Assets/cloud01.png" id="9_vdd4y"]
+[ext_resource type="Texture2D" uid="uid://ds5vaddcrjkgb" path="res://Assets/cloud02.png" id="10_24as2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1nxxk"]
 size = Vector2(260, 206)
@@ -52,6 +54,20 @@ offset_top = 3.0
 offset_right = 1280.0
 offset_bottom = 723.0
 color = Color(0.6480781, 0.64807814, 0.6480781, 1)
+
+[node name="Cloud01" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.3, 0.3)
+repeat_size = Vector2(1920, 0)
+autoscroll = Vector2(30, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="Cloud01"]
+position = Vector2(960, 200)
+rotation = 1.5707964
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("9_vdd4y")
+
+[node name="Player" parent="." instance=ExtResource("1_1nxxk")]
+position = Vector2(77, 460)
 
 [node name="EntrancePlatform" type="StaticBody2D" parent="." groups=["group a", "group b"]]
 position = Vector2(100, 550)
@@ -135,6 +151,18 @@ offset_right = 90.0
 offset_bottom = 15.0
 color = Color(0, 1, 0.960784, 1)
 
+[node name="Cloud03" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.6, 0.6)
+scroll_offset = Vector2(0, 50)
+repeat_size = Vector2(1400, 0)
+autoscroll = Vector2(-30, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="Cloud03"]
+position = Vector2(220, 200)
+rotation = 1.5707964
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("10_24as2")
+
 [node name="MidRightPlatform" type="StaticBody2D" parent="." groups=["group a"]]
 position = Vector2(970, 375)
 
@@ -204,9 +232,6 @@ offset_top = 640.0
 offset_right = 1280.0
 offset_bottom = 720.0
 color = Color(0.0594334, 0.0593918, 0.104636, 1)
-
-[node name="Player" parent="." instance=ExtResource("1_1nxxk")]
-position = Vector2(77, 460)
 
 [node name="Door" parent="." instance=ExtResource("3_c1qhk")]
 position = Vector2(1240, 500)
@@ -335,3 +360,15 @@ rotation = 3.1415927
 
 [node name="GameCamera" type="Camera2D" parent="."]
 position = Vector2(638, 358)
+
+[node name="Cloud02" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.6, 0.6)
+scroll_offset = Vector2(0, 50)
+repeat_size = Vector2(1400, 0)
+autoscroll = Vector2(40, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="Cloud02"]
+position = Vector2(220, 200)
+rotation = 1.5707964
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("10_24as2")
