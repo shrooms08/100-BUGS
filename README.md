@@ -58,28 +58,28 @@ Built for the **Hackathon 2025**, the project demonstrates *meaningful blockchai
 
 ## The 20 Bugs (Season 1)
 
-| #  | Bug Name             | Mechanic                      | Difficulty |
-| -- | -------------------- | ----------------------------- | ---------- |
-| 1  | Plain and Simple     | Tutorial level                | Tutorial   |
-| 2  | Ghost Wall           | Walk through walls            | Easy       |
-| 3  | Low Gravity          | Reduced gravity               | Easy       |
-| 4  | Slippery Floor       | Ice physics                   | Easy       |
-| 5  | Invisible Button     | Hidden interaction            | Easy       |
-| 6  | Play with Gravity    | Gravity reversal on command   | Medium     |
-| 7  | Hitbox Offset        | Misaligned collision          | Medium     |
-| 8  | Stay on It           | Hold position for 5 seconds   | Medium     |
-| 9  | Save Jumps           | Only 3 jumps allowed          | Medium     |
-| 10 | Floor Flicker        | Platforms disappear/reappear  | Medium     |
-| 11 | Just Give Up         | Wait 10 seconds doing nothing | Hard       |
-| 12 | Gravity Fails        | Gravity switches on collision | Hard       |
-| 13 | Swapped Controls     | Reversed input                | Hard       |
-| 14 | Time Delay           | Input lag mechanic            | Hard       |
-| 15 | Velocity Chaos       | Constantly changing speed     | Hard       |
-| 16 | Chaos Shuffle        | Platforms move randomly       | Legendary  |
-| 17 | Alternative Controls | New control scheme            | Legendary  |
-| 18 | Blind Camera         | Limited vision                | Legendary  |
-| 19 | Don't Touch It       | Resist the obvious button     | Legendary  |
-| 20 | Upside Down          | Entire world inverted         | Legendary  |
+| #  | Bug Name                           | Mechanic                      | Difficulty |
+| -- | --------------------               | ----------------------------- | ---------- |
+| 1  | Plain and Simple                   | Tutorial level                | Tutorial   |
+| 2  | Go Back                            | Walk through walls            | Easy       |
+| 3  | Weightless                         | Reduced gravity               | Easy       |
+| 4  | Slippery                           | Ice physics                   | Easy       |
+| 5  | Don't Trust Your Eyes              | Hidden interaction            | Easy       |
+| 6  | What's wrong with Gravity?         | Gravity reversal on command   | Medium     |
+| 7  | Hitbox Offset                      | Misaligned collision          | Medium     |
+| 8  | Stay on It                         | Hold position for 5 seconds   | Medium     |
+| 9  | Save Jumps                         | Only 3 jumps allowed          | Medium     |
+| 10 | Floor Flicker                      | Platforms disappear/reappear  | Medium     |
+| 11 | Just Give Up                       | Wait 10 seconds doing nothing | Hard       |
+| 12 | Gravity Fails                      | Gravity switches on collision | Hard       |
+| 13 | Swapped Controls                   | Reversed input                | Hard       |
+| 14 | Time Delay                         | Input lag mechanic            | Hard       |
+| 15 | Velocity Chaos                     | Constantly changing speed     | Hard       |
+| 16 | Chaos Shuffle                      | Platforms move randomly       | Legendary  |
+| 17 | Alternative Controls               | New control scheme            | Legendary  |
+| 18 | Blind Camera                       | Limited vision                | Legendary  |
+| 19 | Don't Touch It                     | Resist the obvious button     | Legendary  |
+| 20 | Upside Down                        | Entire world inverted         | Legendary  |
 
 ---
 
