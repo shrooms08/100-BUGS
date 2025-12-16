@@ -2,13 +2,38 @@ extends Area2D
 
 var is_locked = true
 
+# Animation
+@onready var door_sprite: AnimatedSprite2D = $DoorSprite
+
+
 func _ready():
 	body_entered.connect(_on_body_entered)
+	
+	# Start with closed door animation
+	if door_sprite:
+		door_sprite.play("closed")
 
 func unlock():
 	is_locked = false
-	if has_node("ColorRect"):
-		$ColorRect.color = Color.GREEN
+	
+	# Play door open animation
+	if door_sprite:
+		door_sprite.play("open")
+	
+	## Optional: Keep ColorRect for backward compatibility
+	#if has_node("ColorRect"):
+		#$ColorRect.color = Color.GREEN
+
+func lock():
+	is_locked = true
+	
+	# Play door close animation
+	if door_sprite:
+		door_sprite.play("closed")
+	
+	## Optional: Keep ColorRect for backward compatibility
+	#if has_node("ColorRect"):
+		#$ColorRect.color = Color.RED
 
 func _on_body_entered(body):
 	if body.is_in_group("player") and not is_locked:
@@ -106,4 +131,3 @@ func show_daily_completion_screen():
 		get_tree().change_scene_to_file("res://Scene/main_menu.tscn")
 	)
 	popup.add_child(continue_btn)
-	

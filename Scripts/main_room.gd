@@ -54,25 +54,25 @@ func change_bug(new_bug: int):
 func update_bug_label():
 	var bug_names = {
 		1: "Plain and Simple",
-		2: "Ghost Wall",
-		3: "Low Gravity",
-		4: "Slippery Floor",
-		5: "Invisible Button",
-		6: "Play with Gravity",
-		7: "Hitbox Offset",
-		8: "Stay on It",  # UPDATED
-		9: "Save Jumps",
-		10: "Floor Flicker",
+		2: "Go Back",
+		3: "Weightless",
+		4: "SLIPPERRY",
+		5: "Don't trust your eyes",
+		6: "What's wrong with gravity?",
+		7: "Displaced",
+		8: "Wait on it!",
+		9: "Limited",
+		10: "Now you see it...",
 		11: "Just Give Up",
-		12: "Gravity Fails",
-		13: "Swapped Controls",
-		14: "Time Delay",
-		15: "Velocity Chaos",
-		16: "Chaos Shuffle",
-		17: "Alternative Controls",
-		18: "Blind Camera",
+		12: "Which way is down?",
+		13: "Mirror world",
+		14: "LAG",
+		15: "Turbulence",
+		16: "CHAOS",
+		17: "New keys",
+		18: "Blind",
 		19: "Don't Touch It",
-		20: "Upside Down"
+		20: "Inverted"
 	}
 	$UI/BugLabel.text = "Bug #%d: %s" % [GameState.current_bug, bug_names.get(GameState.current_bug, "Unknown")]
 
@@ -155,7 +155,7 @@ func reset_to_normal():
 	
 	if has_node("ButtonPlatform/Button"):
 		$ButtonPlatform/Button.visible = true
-		$ButtonPlatform/Button.position = Vector2(-15, -20)
+		$ButtonPlatform/Button.position = Vector2(-15, -10)
 		$ButtonPlatform/Button.set_process_mode(Node.PROCESS_MODE_INHERIT)
 		if $ButtonPlatform/Button.pressed.is_connected(_on_reverse_button_pressed):
 			$ButtonPlatform/Button.pressed.disconnect(_on_reverse_button_pressed)
@@ -289,7 +289,7 @@ func bug_02_ghost_wall():
 	$ButtonPlatform/Button.visible = false
 	
 	fake_button = preload("res://Scene/button.tscn").instantiate()
-	fake_button.position = Vector2(640, 175)
+	fake_button.position = Vector2(640, 185)
 	add_child(fake_button)
 	
 	if fake_button.pressed.is_connected(_on_button_pressed):
