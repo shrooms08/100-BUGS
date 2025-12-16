@@ -11,7 +11,7 @@ A puzzle-platformer that flips game development on its head. Instead of fixing b
 
 ---
 
-## 🎯 Overview
+## Overview
 
 **100 Bugs You Must Exploit** is a puzzle-platformer where *deliberate* game-breaking mechanics are the core gameplay. **Season 1 ships with 20 handcrafted bugs**, each built around a unique broken mechanic—gravity reversal, invisible platforms, control swaps, and more.
 
@@ -19,27 +19,27 @@ Built for the **Hackathon 2025**, the project demonstrates *meaningful blockchai
 
 ---
 
-## ✨ Features
+## Features
 
-### 🎮 Core Gameplay
+### Core Gameplay
 
 * **20 Intentional Bugs (Season 1)** — One broken mechanic per level
 * **Progressive Difficulty** — Tutorial → Legendary
 * **Campaign Mode** — Master all bugs to complete the season
 * **Pure Skill** — No grinding, no pay-to-win
 
-### 🏆 Daily Challenges
+### Daily Challenges
 
 * **New Bug Daily** — Rotating 24-hour challenges
 * **Speedrun Focus** — Beat the clock for better tiers
 * **Tier System**
 
-  * 🥇 Gold: < 30 seconds
-  * 🥈 Silver: < 60 seconds
-  * 🥉 Bronze: < 120 seconds
-  * 🎖️ Participant: Everyone else
+  * Gold: < 30 seconds
+  * Silver: < 60 seconds
+  * Bronze: < 120 seconds
+  * Participant: Everyone else
 
-### ⚡ Solana Integration
+### Solana Integration
 
 * **NFT Rewards** — Each bug completion mints a unique NFT
 * **Proof of Skill** — On-chain achievement verification
@@ -47,7 +47,7 @@ Built for the **Hackathon 2025**, the project demonstrates *meaningful blockchai
 * **IPFS Storage** — Decentralized metadata & artwork
 * **Seamless UX** — No manual transaction pop-ups
 
-### 🎨 Polish
+### Polish
 
 * **Custom Pixel Art** — Distinct visual identity
 * **Sound Design** — Music & SFX for immersion
@@ -56,7 +56,7 @@ Built for the **Hackathon 2025**, the project demonstrates *meaningful blockchai
 
 ---
 
-## 🐛 The 20 Bugs (Season 1)
+## The 20 Bugs (Season 1)
 
 | #  | Bug Name             | Mechanic                      | Difficulty |
 | -- | -------------------- | ----------------------------- | ---------- |
@@ -83,7 +83,7 @@ Built for the **Hackathon 2025**, the project demonstrates *meaningful blockchai
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Game
 
@@ -110,7 +110,7 @@ Built for the **Hackathon 2025**, the project demonstrates *meaningful blockchai
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -173,7 +173,7 @@ Open `http://localhost:8000`
 
 ---
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 100-BUGS/
@@ -197,7 +197,7 @@ Open `http://localhost:8000`
 
 ---
 
-## 🔗 Smart Contract
+## Smart Contract
 
 * **Network:** Solana Devnet
 * **Program ID:** `AuXF95nT7WS865AzQpuj3os9r6DjTYY9ekh4mGgG6gfL`
@@ -213,7 +213,7 @@ Open `http://localhost:8000`
 
 ---
 
-## 🎨 Design Philosophy
+## Design Philosophy
 
 ### Bugs as Features
 
@@ -231,9 +231,9 @@ Every bug is:
 
 ---
 
-## 🛣️ Roadmap
+## Roadmap
 
-### ✅ Phase 1 — MVP
+### Phase 1 — MVP
 
 * [x] 20 bugs (Season 1)
 * [x] Campaign mode
@@ -241,19 +241,19 @@ Every bug is:
 * [x] Solana integration
 * [x] Web build
 
-### 🔄 Phase 2 — Polish
+### Phase 2 — Polish
 
 * [ ] UI/UX improvements
 * [ ] Performance optimization
 * [ ] Mobile-friendly controls
 
-### 📋 Phase 3 — Community
+### Phase 3 — Community
 
 * [ ] Leaderboards
 * [ ] Level editor
 * [ ] Community-created bugs
 
-### 🚀 Phase 4 — Expansion
+### Phase 4 — Expansion
 
 * [ ] Bug Pack 2 (20 new bugs)
 * [ ] Mainnet deployment
@@ -261,17 +261,16 @@ Every bug is:
 
 ---
 
-## 👨‍💻 Developer
+## Developer
 
 **Oghenerukevwe (Minos)**
-Benin City, Nigeria
-Solana Hackathon 2024
+Indie.fun hackathon 
 
 * Twitter: [@shroomsgotsol](#)
 
 ---
 
-## 📺 Media
+## Media
 
 ![Main Menu](assets/screenshots/main-menu.png)
 ![Gameplay](assets/screenshots/gameplay.png)
@@ -281,10 +280,10 @@ Solana Hackathon 2024
 
 <div align="center">
 
-### 🐛 Where bugs aren’t mistakes — they’re the game
+### Where bugs aren’t mistakes — they’re the game
 
-**Built with ❤️ for Solana Hackathon 2024**
+**Built with love for indie.fun Hackathon 2025**
 
-[⭐ Star this repo](https://github.com/shrooms08/100-BUGS) | [🐦 Follow on Twitter: @100bugsonsol](#)
+[Star this repo](https://github.com/shrooms08/100-BUGS) | [ Follow on Twitter: @100bugsonsol](#)
 
 </div>
