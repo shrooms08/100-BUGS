@@ -1,19 +1,27 @@
 [gd_scene load_steps=3 format=3 uid="uid://qgkp6r76te3w"]
 
 [ext_resource type="Script" uid="uid://dp2nqp3188a5n" path="res://Scripts/spikes.gd" id="1_g6xcm"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_rclxw"]
-size = Vector2(100, 20)
+[ext_resource type="Texture2D" uid="uid://diwkxtcdh16vi" path="res://Assets/sike.png" id="2_rclxw"]
 
 [node name="Spikes" type="Area2D"]
 script = ExtResource("1_g6xcm")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_rclxw")
+visible = false
 
 [node name="ColorRect" type="ColorRect" parent="."]
+visible = false
 offset_left = -50.0
 offset_top = -10.0
 offset_right = 50.0
 offset_bottom = 10.0
 color = Color(1, 0, 0, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-8.999999, -15.999999)
+scale = Vector2(0.05, 0.05)
+texture = ExtResource("2_rclxw")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+position = Vector2(-3, 4)
+polygon = PackedVector2Array(-2, -35, -20, -7, 13, -7)
