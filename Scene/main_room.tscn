@@ -1,19 +1,19 @@
-[gd_scene load_steps=17 format=3 uid="uid://cu1ki33hfpate"]
+[gd_scene load_steps=20 format=3 uid="uid://cu1ki33hfpate"]
 
 [ext_resource type="PackedScene" uid="uid://2rfx1hshs6rn" path="res://Scene/player.tscn" id="1_1nxxk"]
 [ext_resource type="Script" uid="uid://cjlfpd4sbydp4" path="res://Scripts/main_room.gd" id="1_d82uo"]
+[ext_resource type="Texture2D" uid="uid://b6tfeto8svdlv" path="res://Assets/floor.png" id="2_j86dn"]
 [ext_resource type="PackedScene" uid="uid://cmem1vcrcu3qa" path="res://Scene/button.tscn" id="2_p5rcu"]
 [ext_resource type="PackedScene" uid="uid://cbp1ggbqgqax0" path="res://Scene/door.tscn" id="3_c1qhk"]
+[ext_resource type="Texture2D" uid="uid://c2a5lfpii3kxb" path="res://Assets/platform  (20251216033825).png" id="3_j86dn"]
 [ext_resource type="PackedScene" uid="uid://qgkp6r76te3w" path="res://Scene/spikes.tscn" id="5_rl3wi"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ns0wk"]
-size = Vector2(1280, 80)
+[ext_resource type="FontFile" uid="uid://bqdpte3m2v88p" path="res://Assets/Higher Jump.ttf" id="6_clytc"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1nxxk"]
-size = Vector2(120, 98)
+size = Vector2(260, 206)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_p5rcu"]
-size = Vector2(170, 30)
+size = Vector2(180, 30)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_c1qhk"]
 size = Vector2(140, 30)
@@ -25,7 +25,7 @@ size = Vector2(180, 30)
 size = Vector2(140, 30)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_clytc"]
-size = Vector2(120, 100)
+size = Vector2(309, 197)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xp5ko"]
 size = Vector2(20, 720)
@@ -36,7 +36,11 @@ size = Vector2(20, 720)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vdd4y"]
 size = Vector2(1280, 20)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ns0wk"]
+size = Vector2(1280, 80)
+
 [sub_resource type="LabelSettings" id="LabelSettings_d82uo"]
+font = ExtResource("6_clytc")
 
 [node name="MainRoom" type="Node2D"]
 script = ExtResource("1_d82uo")
@@ -46,28 +50,22 @@ metadata/_edit_vertical_guides_ = [1280.0, 640.0, 320.0, 960.0, 22.0]
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_right = 1280.0
 offset_bottom = 720.0
-color = Color(0.137662, 0.137695, 0.233559, 1)
-
-[node name="Ground" type="StaticBody2D" parent="."]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground"]
-position = Vector2(640, 680)
-shape = SubResource("RectangleShape2D_ns0wk")
-
-[node name="ColorRect" type="ColorRect" parent="Ground"]
-offset_top = 640.0
-offset_right = 1280.0
-offset_bottom = 720.0
-color = Color(0.0594334, 0.0593918, 0.104636, 1)
+color = Color(0.6480781, 0.64807814, 0.6480781, 1)
 
 [node name="EntrancePlatform" type="StaticBody2D" parent="." groups=["group a", "group b"]]
 position = Vector2(100, 550)
 
+[node name="Sprite2D" type="Sprite2D" parent="EntrancePlatform"]
+position = Vector2(-91.99999, 90)
+scale = Vector2(0.40185186, 0.31851852)
+texture = ExtResource("2_j86dn")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EntrancePlatform"]
-position = Vector2(-40, 39)
+position = Vector2(-103, 94)
 shape = SubResource("RectangleShape2D_1nxxk")
 
 [node name="ColorRect" type="ColorRect" parent="EntrancePlatform"]
+visible = false
 offset_left = -100.0
 offset_top = -10.0
 offset_right = 20.0
@@ -77,11 +75,17 @@ color = Color(0, 1, 0.960784, 1)
 [node name="ButtonPlatform" type="StaticBody2D" parent="." groups=["group b"]]
 position = Vector2(655, 195)
 
+[node name="Sprite2D" type="Sprite2D" parent="ButtonPlatform"]
+position = Vector2(-8, -0.25)
+scale = Vector2(0.27407408, 0.049537037)
+texture = ExtResource("3_j86dn")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ButtonPlatform"]
 position = Vector2(-15, 0)
 shape = SubResource("RectangleShape2D_p5rcu")
 
 [node name="ColorRect" type="ColorRect" parent="ButtonPlatform"]
+visible = false
 offset_left = -100.0
 offset_top = -15.0
 offset_right = 70.0
@@ -89,16 +93,22 @@ offset_bottom = 15.0
 color = Color(0, 1, 0.960784, 1)
 
 [node name="Button" parent="ButtonPlatform" instance=ExtResource("2_p5rcu")]
-position = Vector2(-15, -20)
+position = Vector2(-15, -11)
 
 [node name="MidLeftPlatform" type="StaticBody2D" parent="." groups=["group a"]]
 position = Vector2(350, 375)
+
+[node name="Sprite2D" type="Sprite2D" parent="MidLeftPlatform"]
+position = Vector2(-23.999979, 0)
+scale = Vector2(0.22037038, 0.046296287)
+texture = ExtResource("3_j86dn")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MidLeftPlatform"]
 position = Vector2(-30, 0)
 shape = SubResource("RectangleShape2D_c1qhk")
 
 [node name="ColorRect" type="ColorRect" parent="MidLeftPlatform"]
+visible = false
 offset_left = -100.0
 offset_top = -15.0
 offset_right = 40.0
@@ -108,10 +118,16 @@ color = Color(0, 1, 0.960784, 1)
 [node name="CenterPlatform" type="StaticBody2D" parent="."]
 position = Vector2(639, 466)
 
+[node name="Sprite2D" type="Sprite2D" parent="CenterPlatform"]
+position = Vector2(7.49998, 0)
+scale = Vector2(0.28055555, 0.046296295)
+texture = ExtResource("3_j86dn")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CenterPlatform"]
 shape = SubResource("RectangleShape2D_d82uo")
 
 [node name="ColorRect" type="ColorRect" parent="CenterPlatform"]
+visible = false
 offset_left = -90.0
 offset_top = -15.0
 offset_right = 90.0
@@ -121,11 +137,17 @@ color = Color(0, 1, 0.960784, 1)
 [node name="MidRightPlatform" type="StaticBody2D" parent="." groups=["group a"]]
 position = Vector2(970, 375)
 
+[node name="Sprite2D" type="Sprite2D" parent="MidRightPlatform"]
+position = Vector2(-4.500073, 0)
+scale = Vector2(0.21944442, 0.046296295)
+texture = ExtResource("3_j86dn")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MidRightPlatform"]
 position = Vector2(-10, 0)
 shape = SubResource("RectangleShape2D_rl3wi")
 
 [node name="ColorRect" type="ColorRect" parent="MidRightPlatform"]
+visible = false
 offset_left = -80.0
 offset_top = -15.0
 offset_right = 60.0
@@ -135,11 +157,17 @@ color = Color(0, 1, 0.960784, 1)
 [node name="DoorPlatform" type="StaticBody2D" parent="." groups=["group b"]]
 position = Vector2(1220, 518)
 
+[node name="Sprite2D" type="Sprite2D" parent="DoorPlatform"]
+position = Vector2(106, 117.000015)
+scale = Vector2(0.47407407, 0.30277777)
+texture = ExtResource("2_j86dn")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DoorPlatform"]
-position = Vector2(0, 72)
+position = Vector2(94.5, 120.5)
 shape = SubResource("RectangleShape2D_clytc")
 
 [node name="ColorRect" type="ColorRect" parent="DoorPlatform"]
+visible = false
 offset_left = -60.0
 offset_top = 22.0
 offset_right = 60.0
@@ -163,6 +191,18 @@ shape = SubResource("RectangleShape2D_j86dn")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ceiling"]
 position = Vector2(640, 10)
 shape = SubResource("RectangleShape2D_vdd4y")
+
+[node name="Ground" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground"]
+position = Vector2(640, 680)
+shape = SubResource("RectangleShape2D_ns0wk")
+
+[node name="ColorRect" type="ColorRect" parent="Ground"]
+offset_top = 640.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.0594334, 0.0593918, 0.104636, 1)
 
 [node name="Player" parent="." instance=ExtResource("1_1nxxk")]
 position = Vector2(77, 460)

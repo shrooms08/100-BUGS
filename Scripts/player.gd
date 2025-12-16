@@ -23,6 +23,14 @@ var gravity_flips_on_land = false
 var last_on_floor = false
 var use_alternative_controls = false
 
+# Animation
+@onready var bug: AnimatedSprite2D = $Bug
+
+
+func _ready():
+	if bug:
+		bug.play("idle")
+
 func _physics_process(delta):
 	# Bug #6: Play with Gravity (gravity switches on jump press)
 	if gravity_switches_on_jump:
@@ -151,6 +159,45 @@ func _physics_process(delta):
 		$CollisionShape2D.position = hitbox_offset
 	else:
 		$CollisionShape2D.position = Vector2.ZERO
+	
+	# Update animations
+	update_animation(direction)
+
+func update_animation(direction: float):
+	if not bug:
+		return
+	
+	# Flip sprite based on direction
+	if direction > 0:
+		bug.flip_h = false
+	elif direction < 0:
+		bug.flip_h = true
+	
+	# Flip sprite vertically based on gravity direction (Bug #6, #12)
+	if gravity_switches_on_jump or gravity_flips_on_land:
+		if current_gravity_direction == -1:
+			# Gravity is upward - flip sprite upside down
+			bug.flip_v = true
+		else:
+			# Gravity is normal - sprite right side up
+			bug.flip_v = false
+	else:
+		# Normal gameplay - no vertical flip
+		bug.flip_v = false
+	
+	# Play appropriate animation
+	if not is_on_floor():
+		# In air - play jump animation
+		if bug.animation != "jump":
+			bug.play("jump")
+	elif direction != 0:
+		# Moving - play walk animation
+		if bug.animation != "walk":
+			bug.play("walk")
+	else:
+		# Standing still - play idle animation
+		if bug.animation != "idle":
+			bug.play("idle")
 
 func die():
 	position = Vector2(84, 538)
@@ -160,3 +207,8 @@ func die():
 	jumps_remaining = 3  # Reset jumps on death
 	current_gravity_direction = 1  # Reset gravity direction
 	last_on_floor = false
+	
+	# Reset animation to idle and reset flips
+	if bug:
+		bug.play("idle")
+		bug.flip_v = false  # Reset vertical flip
