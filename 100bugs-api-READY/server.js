@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const { PublicKey, Keypair } = require('@solana/web3.js');
+const { PublicKey, Keypair, SystemProgram, Connection } = require('@solana/web3.js');
+const anchor = require('@coral-xyz/anchor');
 require('dotenv').config();
 
 const app = express();
@@ -8,45 +9,202 @@ app.use(cors());
 app.use(express.json());
 
 const PROGRAM_ID = new PublicKey('AuXF95nT7WS865AzQpuj3os9r6DjTYY9ekh4mGgG6gfL');
+const CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d');
+const COLLECTION_ADDRESS = new PublicKey(process.env.COLLECTION_ADDRESS || '3ZQPh5QRLuGfNhY3hbCC8e5AYiLEaWaFoYVxdvTpz9gi');
 
-console.log('🚀 100 Bugs Solana API - DEMO MODE');
-console.log('📺 Ready for technical video recording');
+// Load IDL
+const IDL = require('./idl.json');
+
+// Connection to Solana (for reading state, not signing)
+const connection = process.env.SOLANA_RPC_URL 
+  ? new Connection(process.env.SOLANA_RPC_URL, 'confirmed')
+  : new Connection('https://api.devnet.solana.com', 'confirmed');
+
+const USE_REAL_BLOCKCHAIN = process.env.USE_REAL_BLOCKCHAIN === 'true';
+
+console.log('🚀 100 Bugs Solana API');
 console.log('Program:', PROGRAM_ID.toString());
-console.log('✅ Mock NFT minting enabled\n');
+console.log('Collection:', COLLECTION_ADDRESS.toString());
+console.log('Mode:', USE_REAL_BLOCKCHAIN ? 'REAL BLOCKCHAIN' : 'DEMO MODE');
+console.log('RPC:', connection.rpcEndpoint);
+console.log('');
 
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     programId: PROGRAM_ID.toString(),
-    mode: 'demo'
+    mode: USE_REAL_BLOCKCHAIN ? 'real' : 'demo'
   });
 });
 
+// Serve IDL for client-side transaction building
+app.get('/idl', (req, res) => {
+  res.json(IDL);
+});
+
+// Helper function to derive PDAs
+function derivePDA(seeds, programId) {
+  return PublicKey.findProgramAddressSync(seeds, programId);
+}
+
 app.post('/mint-campaign-nft', async (req, res) => {
   try {
-    const { bugId, name, imageUri } = req.body;
+    const { wallet, bugId, name, imageUri, campaignId = 1 } = req.body;
+    
+    if (!wallet) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Wallet address is required' 
+      });
+    }
     
     console.log(`\n${'='.repeat(60)}`);
     console.log(`🎨 MINTING NFT - Bug #${bugId}`);
     console.log(`${'='.repeat(60)}`);
+    console.log(`👤 Wallet: ${wallet}`);
     console.log(`📝 Name: ${name}`);
     console.log(`🖼️  Image: ${imageUri?.substring(0, 50)}...`);
-    console.log(`\n⏳ Processing blockchain transaction...`);
+    console.log(`📋 Campaign ID: ${campaignId}`);
     
-    // Simulate blockchain delay (realistic timing)
+    const playerPubkey = new PublicKey(wallet);
+    
+    // Derive PDAs
+    const [campaignPda] = derivePDA(
+      [Buffer.from('campaign'), Buffer.from([campaignId])],
+      PROGRAM_ID
+    );
+    
+    const [campaignCompletionPda] = derivePDA(
+      [
+        Buffer.from('completion'),
+        Buffer.from([campaignId]),
+        playerPubkey.toBuffer(),
+        Buffer.from([bugId])
+      ],
+      PROGRAM_ID
+    );
+    
+    const [collectionAuthorityPda] = derivePDA(
+      [Buffer.from('collection'), COLLECTION_ADDRESS.toBuffer()],
+      PROGRAM_ID
+    );
+    
+    const [playerProgressPda] = derivePDA(
+      [
+        Buffer.from('progress'),
+        Buffer.from([campaignId]),
+        playerPubkey.toBuffer()
+      ],
+      PROGRAM_ID
+    );
+    
+    // Generate NFT asset keypair (client will sign this)
+    const assetKeypair = Keypair.generate();
+    
+    console.log(`\n📍 PDAs:`);
+    console.log(`   Campaign: ${campaignPda.toString()}`);
+    console.log(`   Completion: ${campaignCompletionPda.toString()}`);
+    console.log(`   Collection Authority: ${collectionAuthorityPda.toString()}`);
+    console.log(`   Asset (NFT): ${assetKeypair.publicKey.toString()}`);
+    
+    if (USE_REAL_BLOCKCHAIN) {
+      // Check if campaign completion exists (if not, need to start campaign first)
+      let needsStartCampaign = false;
+      try {
+        const completionAccount = await connection.getAccountInfo(campaignCompletionPda);
+        needsStartCampaign = !completionAccount;
+      } catch (e) {
+        needsStartCampaign = true;
+      }
+      
+      // Build transaction instructions
+      const instructions = [];
+      
+      // Step 1: Start campaign if needed
+      if (needsStartCampaign) {
+        console.log(`\n📝 Step 1: Building start_campaign instruction...`);
+        instructions.push({
+          type: 'start_campaign',
+          programId: PROGRAM_ID.toString(),
+          accounts: {
+            player: wallet,
+            campaignCompletion: campaignCompletionPda.toString(),
+            campaign: campaignPda.toString(),
+            systemProgram: SystemProgram.programId.toString()
+          },
+          args: {
+            campaign_id: campaignId,
+            bug_id: bugId
+          }
+        });
+      }
+      
+      // Step 2: Record completion
+      console.log(`\n📝 Step 2: Building record_campaign_completion instruction...`);
+      instructions.push({
+        type: 'record_campaign_completion',
+        programId: PROGRAM_ID.toString(),
+        accounts: {
+          player: wallet,
+          campaignCompletion: campaignCompletionPda.toString(),
+          playerProgress: playerProgressPda.toString(),
+          campaign: campaignPda.toString(),
+          systemProgram: SystemProgram.programId.toString()
+        },
+        args: {
+          campaign_id: campaignId,
+          bug_id: bugId
+        }
+      });
+      
+      // Step 3: Mint NFT
+      console.log(`\n📝 Step 3: Building mint_nft instruction...`);
+      instructions.push({
+        type: 'mint_nft',
+        programId: PROGRAM_ID.toString(),
+        accounts: {
+          player: wallet,
+          asset: assetKeypair.publicKey.toString(),
+          collection: COLLECTION_ADDRESS.toString(),
+          collectionAuthority: collectionAuthorityPda.toString(),
+          campaignCompletion: campaignCompletionPda.toString(),
+          coreProgram: CORE_PROGRAM_ID.toString(),
+          systemProgram: SystemProgram.programId.toString()
+        },
+        args: {
+          campaign_id: campaignId,
+          bug_id: bugId,
+          name: name,
+          nft_uri: imageUri || ''
+        },
+        signers: [assetKeypair.secretKey] // Client needs to sign with this keypair
+      });
+      
+      console.log(`\n✅ Transaction instructions built!`);
+      console.log(`   Instructions: ${instructions.length}`);
+      console.log(`   Client will sign and send...\n`);
+      
+      res.json({
+        success: true,
+        instructions: instructions,
+        assetKeypair: Array.from(assetKeypair.secretKey), // Send secret key for client to sign
+        campaignId: campaignId,
+        bugId: bugId,
+        nftAddress: assetKeypair.publicKey.toString(),
+        mode: 'real'
+      });
+    } else {
+      // DEMO MODE - return mock data
+      console.log(`\n⏳ DEMO MODE - Simulating transaction...`);
     await new Promise(r => setTimeout(r, 1500));
     
-    // Generate realistic-looking addresses
     const mockNFT = Keypair.generate().publicKey.toString();
     const mockTx = generateRealisticTxHash();
     const mockSolscan = `https://solscan.io/tx/${mockTx}?cluster=devnet`;
     
-    console.log(`\n✅ NFT MINTED SUCCESSFULLY!`);
-    console.log(`${'='.repeat(60)}`);
-    console.log(`🎯 Bug Completed: #${bugId}`);
+      console.log(`\n✅ NFT MINTED SUCCESSFULLY! (DEMO)`);
     console.log(`🎨 NFT Address: ${mockNFT}`);
     console.log(`📜 Transaction: ${mockTx}`);
-    console.log(`🔗 View on Solscan: ${mockSolscan}`);
     console.log(`${'='.repeat(60)}\n`);
     
     res.json({
@@ -56,11 +214,14 @@ app.post('/mint-campaign-nft', async (req, res) => {
       solscanUrl: mockSolscan,
       bugId: bugId,
       bugName: name,
-      timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        mode: 'demo'
     });
+    }
     
   } catch (error) {
     console.error('\n❌ MINTING FAILED:', error.message);
+    if (error.stack) console.error(error.stack);
     res.status(500).json({ 
       success: false, 
       error: error.message 
@@ -144,14 +305,15 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log('━'.repeat(60));
   console.log(`✅ Server running on http://localhost:${PORT}`);
-  console.log('🎬 Ready to record technical demo!');
+  console.log(`Mode: ${USE_REAL_BLOCKCHAIN ? 'REAL BLOCKCHAIN' : 'DEMO'}`);
   console.log('━'.repeat(60));
   console.log('\n📋 Available endpoints:');
   console.log('  GET  /health');
+  console.log('  GET  /idl');
   console.log('  POST /mint-campaign-nft');
   console.log('  GET  /campaign-stats/:id');
   console.log('  GET  /daily-bug');
   console.log('  GET  /has-completed-bug/:wallet/:bugId');
   console.log('  GET  /player-progress/:wallet');
-  console.log('\n🎮 Start your game and begin recording!\n');
+  console.log('\n🎮 Ready for NFT minting!\n');
 });

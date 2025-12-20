@@ -22,13 +22,13 @@ SolanaManager="*res://ManagerScript/solana_manager.gd"
 BugData="*res://ManagerScript/bug_data.gd"
 MusicManager="*res://Scene/music_manager.tscn"
 SfxManager="*res://Scene/sfx_manager.tscn"
+TouchControls="*res://Scene/touch_controls.tscn"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
 
 [rendering]
 

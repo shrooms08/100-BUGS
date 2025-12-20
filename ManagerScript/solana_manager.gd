@@ -1,8 +1,13 @@
 extends Node
 
 # API Configuration
-const API_URL = "http://localhost:3000"
+const API_URL = "https://undeferred-nontraditionally-margorie.ngrok-free.dev"
 const COLLECTION_ADDRESS = "3ZQPh5QRLuGfNhY3hbCC8e5AYiLEaWaFoYVxdvTpz9gi"
+
+# Called when the node enters the scene tree (on game startup)
+func _ready():
+	print("🚀 Solana Manager initialized - running health check...")
+	test_connection()
 
 # ==================== CAMPAIGN MODE ====================
 
@@ -12,29 +17,86 @@ func mint_campaign_nft(bug_id: int, metadata: Dictionary):
 		print("ERROR: No wallet connected")
 		return false
 	
-	print("🎨 Minting Campaign NFT via API:")
+	print("🎨 Minting Campaign NFT:")
 	print("  - Wallet: ", GameState.wallet_address)
 	print("  - Bug ID: ", bug_id)
 	print("  - Name: ", metadata.get("name", "Unknown Bug"))
-	print("  - Description: ", metadata.get("description", ""))
 	print("  - Image URI: ", metadata.get("image_uri", ""))
-	print("  - Difficulty: ", metadata.get("difficulty", "Unknown"))
-	print("  - Collection: ", COLLECTION_ADDRESS)
 	
-	# Create HTTP request
+	if OS.has_feature("web"):
+		# Use JavaScript wallet function for signing
+		var name = metadata.get("name", "Unknown Bug")
+		var image_uri = metadata.get("image_uri", "")
+		
+		# Initialize result storage
+		JavaScriptBridge.eval("window._mintResult = null;", true)
+		
+		# Call the async function
+		JavaScriptBridge.eval("""
+			(async () => {
+				try {
+					const result = await window.mintCampaignNFT(
+						%BUG_ID%,
+						'%NAME%',
+						'%IMAGE_URI%',
+						'%WALLET%'
+					);
+					window._mintResult = result;
+					console.log('Mint result stored:', result);
+				} catch (error) {
+					console.error('Mint error:', error);
+					window._mintResult = JSON.stringify({
+						success: false,
+						error: error.message
+					});
+				}
+			})();
+		""".replace("%BUG_ID%", str(bug_id))
+			.replace("%NAME%", name.replace("'", "\\'"))
+			.replace("%IMAGE_URI%", image_uri.replace("'", "\\'"))
+			.replace("%WALLET%", GameState.wallet_address), true)
+		
+		# Poll for result (max 10 seconds)
+		var max_attempts = 50
+		var attempt = 0
+		while attempt < max_attempts:
+			await get_tree().create_timer(0.2).timeout
+			
+			var result_str = JavaScriptBridge.eval("window._mintResult", true)
+			if result_str and result_str != "null" and result_str != "":
+				var result = JSON.parse_string(result_str)
+				if result:
+					if result.get("success", false):
+						print("✅ NFT minted successfully!")
+						if result.has("nftAddress"):
+							print("   NFT Address: ", result.get("nftAddress", ""))
+						if result.has("transaction"):
+							print("   Transaction: ", result.get("transaction", ""))
+							if result.has("solscanUrl"):
+								print("   View on Solscan: ", result.get("solscanUrl", ""))
+						# Clean up
+						JavaScriptBridge.eval("window._mintResult = null;", true)
+						return true
+					else:
+						print("❌ Mint failed: ", result.get("error", "Unknown error"))
+						JavaScriptBridge.eval("window._mintResult = null;", true)
+						return false
+			
+			attempt += 1
+		
+		print("⚠️  Mint timeout - using API fallback...")
+	
+	# Fallback: Direct API call (for desktop or if JS fails)
 	var http = HTTPRequest.new()
 	add_child(http)
 	http.request_completed.connect(_on_mint_nft_completed)
 	
-	# Prepare request body
 	var body = {
 		"wallet": GameState.wallet_address,
 		"bugId": bug_id,
 		"name": metadata.get("name", "Unknown Bug"),
-		"description": metadata.get("description", ""),
 		"imageUri": metadata.get("image_uri", ""),
-		"difficulty": metadata.get("difficulty", "Unknown"),
-		"collectionAddress": COLLECTION_ADDRESS
+		"campaignId": 1
 	}
 	
 	var headers = ["Content-Type: application/json"]
@@ -50,7 +112,6 @@ func mint_campaign_nft(bug_id: int, metadata: Dictionary):
 		http.queue_free()
 		return false
 	
-	# Wait for response
 	await http.request_completed
 	return true
 
