@@ -102,6 +102,7 @@ func _on_player_exited_button():
 
 func apply_bug(bug_id: int):
 	reset_to_normal()
+	setup_spikes_for_bug(bug_id)
 	
 	match bug_id:
 		1: bug_01_plain_simple()
@@ -503,3 +504,28 @@ func spawn_multi_clones():
 	enemy.modulate = Color.RED
 	add_child(enemy)
 	clones.append(enemy)
+
+func setup_spikes_for_bug(bug_id: int):
+	# Check if Spikes parent node exists
+	if not has_node("Spikes"):
+		return
+	
+	# Loop through all bug spike groups and hide them
+	for i in range(1, 21):
+		var spike_group = get_node_or_null("Spikes/Bug" + str(i) + "Spikes")
+		if spike_group:
+			spike_group.visible = false
+			# Disable collision for all spikes in this group
+			for spike in spike_group.get_children():
+				if spike is Area2D:
+					spike.monitoring = false
+					spike.monitorable = false
+	
+	# Show and enable current bug's spikes
+	var current_spikes = get_node_or_null("Spikes/Bug" + str(bug_id) + "Spikes")
+	if current_spikes:
+		current_spikes.visible = true
+		for spike in current_spikes.get_children():
+			if spike is Area2D:
+				spike.monitoring = true
+				spike.monitorable = true
