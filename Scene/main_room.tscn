@@ -47,7 +47,7 @@ font = ExtResource("6_clytc")
 [node name="MainRoom" type="Node2D"]
 script = ExtResource("1_d82uo")
 metadata/_edit_horizontal_guides_ = [540.0, 360.0, 180.0, 534.0]
-metadata/_edit_vertical_guides_ = [1280.0, 640.0, 320.0, 960.0, 22.0]
+metadata/_edit_vertical_guides_ = [1283.0, 640.0, 320.0, 960.0, 22.0]
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_top = 3.0
@@ -56,6 +56,7 @@ offset_bottom = 723.0
 color = Color(0.6480781, 0.64807814, 0.6480781, 1)
 
 [node name="Cloud01" type="Parallax2D" parent="."]
+modulate = Color(1, 1, 1, 0.7254902)
 scroll_scale = Vector2(0.3, 0.3)
 repeat_size = Vector2(1920, 0)
 autoscroll = Vector2(30, 0)
@@ -152,6 +153,7 @@ offset_bottom = 15.0
 color = Color(0, 1, 0.960784, 1)
 
 [node name="Cloud03" type="Parallax2D" parent="."]
+modulate = Color(0.90588236, 0.90588236, 0.90588236, 0.5019608)
 scroll_scale = Vector2(0.6, 0.6)
 scroll_offset = Vector2(0, 50)
 repeat_size = Vector2(1400, 0)
@@ -218,7 +220,7 @@ shape = SubResource("RectangleShape2D_j86dn")
 [node name="Ceiling" type="StaticBody2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ceiling"]
-position = Vector2(640, 10)
+position = Vector2(641, -6)
 shape = SubResource("RectangleShape2D_vdd4y")
 
 [node name="Ground" type="StaticBody2D" parent="."]
@@ -360,8 +362,13 @@ rotation = 3.1415927
 
 [node name="GameCamera" type="Camera2D" parent="."]
 position = Vector2(638, 358)
+limit_left = 0
+limit_top = 0
+limit_right = 1280
+limit_bottom = 720
 
 [node name="Cloud02" type="Parallax2D" parent="."]
+modulate = Color(0.99607843, 0.99607843, 0.99607843, 0.6156863)
 scroll_scale = Vector2(0.6, 0.6)
 scroll_offset = Vector2(0, 50)
 repeat_size = Vector2(1400, 0)
@@ -372,3 +379,393 @@ position = Vector2(220, 200)
 rotation = 1.5707964
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("10_24as2")
+
+[node name="Spikes" type="Node" parent="."]
+
+[node name="Bug2Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug2Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(-13, 543)
+
+[node name="Spikes2" parent="Spikes/Bug2Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(609, 184)
+
+[node name="Spikes3" parent="Spikes/Bug2Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(684, 184)
+
+[node name="Spikes4" parent="Spikes/Bug2Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(324, 365)
+
+[node name="Spikes5" parent="Spikes/Bug2Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(964, 365)
+
+[node name="Spikes6" parent="Spikes/Bug2Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(570, 455)
+
+[node name="Spikes7" parent="Spikes/Bug2Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(718, 455)
+
+[node name="Bug3Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(278, 363)
+
+[node name="Spikes2" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(312, 363)
+
+[node name="Spikes3" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(347, 363)
+
+[node name="Spikes4" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(377, 363)
+
+[node name="Spikes5" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(917, 363)
+
+[node name="Spikes6" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(951, 363)
+
+[node name="Spikes7" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(986, 363)
+
+[node name="Spikes8" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1016, 363)
+
+[node name="Spikes9" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(595, 454)
+
+[node name="Spikes10" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(629, 454)
+
+[node name="Spikes11" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(664, 454)
+
+[node name="Spikes12" parent="Spikes/Bug3Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(694, 454)
+
+[node name="Bug4Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug4Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(325, 363)
+
+[node name="Spikes2" parent="Spikes/Bug4Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(966, 363)
+
+[node name="Spikes3" parent="Spikes/Bug4Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(577, 454)
+
+[node name="Spikes4" parent="Spikes/Bug4Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(611, 454)
+
+[node name="Spikes5" parent="Spikes/Bug4Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(645, 454)
+
+[node name="Spikes6" parent="Spikes/Bug4Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(680, 454)
+
+[node name="Spikes7" parent="Spikes/Bug4Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(713, 454)
+
+[node name="Bug5Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug5Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(381, 363)
+
+[node name="Spikes2" parent="Spikes/Bug5Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(966, 363)
+
+[node name="Spikes3" parent="Spikes/Bug5Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(577, 454)
+
+[node name="Spikes4" parent="Spikes/Bug5Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(611, 454)
+
+[node name="Spikes5" parent="Spikes/Bug5Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(645, 454)
+
+[node name="Spikes6" parent="Spikes/Bug5Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(680, 454)
+
+[node name="Spikes7" parent="Spikes/Bug5Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(713, 454)
+
+[node name="Bug6Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(273, 363)
+
+[node name="Spikes2" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(306, 363)
+
+[node name="Spikes3" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(339, 363)
+
+[node name="Spikes4" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(374, 363)
+
+[node name="Spikes5" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(916, 363)
+
+[node name="Spikes6" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(949, 363)
+
+[node name="Spikes7" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(982, 363)
+
+[node name="Spikes8" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1017, 363)
+
+[node name="Spikes9" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(28, -1)
+rotation = 3.1415927
+
+[node name="Spikes10" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(61, -1)
+rotation = 3.1415927
+
+[node name="Spikes11" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(94, -1)
+rotation = 3.1415927
+
+[node name="Spikes12" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(129, -1)
+rotation = 3.1415927
+
+[node name="Spikes13" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(601, -1)
+rotation = 3.1415927
+
+[node name="Spikes14" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(634, -1)
+rotation = 3.1415927
+
+[node name="Spikes15" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(667, -1)
+rotation = 3.1415927
+
+[node name="Spikes17" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1142, -1)
+rotation = 3.1415927
+
+[node name="Spikes18" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1175, -1)
+rotation = 3.1415927
+
+[node name="Spikes19" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1208, -1)
+rotation = 3.1415927
+
+[node name="Spikes20" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1243, -1)
+rotation = 3.1415927
+
+[node name="Spikes21" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(574, 184)
+
+[node name="Spikes22" parent="Spikes/Bug6Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(719, 184)
+
+[node name="Bug12Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(273, 363)
+
+[node name="Spikes4" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(374, 363)
+
+[node name="Spikes5" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(916, 363)
+
+[node name="Spikes8" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1017, 363)
+
+[node name="Spikes9" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(28, -1)
+rotation = 3.1415927
+
+[node name="Spikes10" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(61, -1)
+rotation = 3.1415927
+
+[node name="Spikes11" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(94, -1)
+rotation = 3.1415927
+
+[node name="Spikes12" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(129, -1)
+rotation = 3.1415927
+
+[node name="Spikes13" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(601, -1)
+rotation = 3.1415927
+
+[node name="Spikes14" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(634, -1)
+rotation = 3.1415927
+
+[node name="Spikes15" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(667, -1)
+rotation = 3.1415927
+
+[node name="Spikes16" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(612, 455)
+
+[node name="Spikes21" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(645, 455)
+
+[node name="Spikes22" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(678, 455)
+
+[node name="Spikes17" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1142, -1)
+rotation = 3.1415927
+
+[node name="Spikes18" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1175, -1)
+rotation = 3.1415927
+
+[node name="Spikes19" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1208, -1)
+rotation = 3.1415927
+
+[node name="Spikes20" parent="Spikes/Bug12Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(1243, -1)
+rotation = 3.1415927
+
+[node name="Bug13Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug13Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(325, 363)
+
+[node name="Spikes2" parent="Spikes/Bug13Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(966, 363)
+
+[node name="Spikes3" parent="Spikes/Bug13Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(577, 454)
+
+[node name="Spikes4" parent="Spikes/Bug13Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(611, 454)
+
+[node name="Spikes5" parent="Spikes/Bug13Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(645, 454)
+
+[node name="Spikes6" parent="Spikes/Bug13Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(680, 454)
+
+[node name="Spikes7" parent="Spikes/Bug13Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(713, 454)
+
+[node name="Bug14Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug14Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(325, 363)
+
+[node name="Spikes2" parent="Spikes/Bug14Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(966, 363)
+
+[node name="Spikes3" parent="Spikes/Bug14Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(577, 454)
+
+[node name="Spikes4" parent="Spikes/Bug14Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(611, 454)
+
+[node name="Spikes5" parent="Spikes/Bug14Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(645, 454)
+
+[node name="Spikes6" parent="Spikes/Bug14Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(680, 454)
+
+[node name="Spikes7" parent="Spikes/Bug14Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(713, 454)
+
+[node name="Bug15Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug15Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(325, 363)
+
+[node name="Spikes2" parent="Spikes/Bug15Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(966, 363)
+
+[node name="Spikes3" parent="Spikes/Bug15Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(577, 454)
+
+[node name="Spikes4" parent="Spikes/Bug15Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(611, 454)
+
+[node name="Spikes5" parent="Spikes/Bug15Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(645, 454)
+
+[node name="Spikes6" parent="Spikes/Bug15Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(680, 454)
+
+[node name="Spikes7" parent="Spikes/Bug15Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(713, 454)
+
+[node name="Bug16Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug16Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(325, 363)
+
+[node name="Spikes2" parent="Spikes/Bug16Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(966, 363)
+
+[node name="Spikes3" parent="Spikes/Bug16Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(577, 454)
+
+[node name="Spikes4" parent="Spikes/Bug16Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(611, 454)
+
+[node name="Spikes5" parent="Spikes/Bug16Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(645, 454)
+
+[node name="Spikes6" parent="Spikes/Bug16Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(680, 454)
+
+[node name="Spikes7" parent="Spikes/Bug16Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(713, 454)
+
+[node name="Bug18Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug18Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(325, 363)
+
+[node name="Spikes2" parent="Spikes/Bug18Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(966, 363)
+
+[node name="Spikes3" parent="Spikes/Bug18Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(577, 454)
+
+[node name="Spikes4" parent="Spikes/Bug18Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(611, 454)
+
+[node name="Spikes5" parent="Spikes/Bug18Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(645, 454)
+
+[node name="Spikes6" parent="Spikes/Bug18Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(680, 454)
+
+[node name="Spikes7" parent="Spikes/Bug18Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(713, 454)
+
+[node name="Bug19Spikes" type="Node2D" parent="Spikes"]
+
+[node name="Spikes" parent="Spikes/Bug19Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(325, 363)
+
+[node name="Spikes2" parent="Spikes/Bug19Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(966, 363)
+
+[node name="Spikes3" parent="Spikes/Bug19Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(577, 454)
+
+[node name="Spikes4" parent="Spikes/Bug19Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(611, 454)
+
+[node name="Spikes5" parent="Spikes/Bug19Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(645, 454)
+
+[node name="Spikes6" parent="Spikes/Bug19Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(680, 454)
+
+[node name="Spikes7" parent="Spikes/Bug19Spikes" instance=ExtResource("5_rl3wi")]
+position = Vector2(713, 454)
