@@ -1,6 +1,7 @@
 extends Area2D
 
 var is_locked = true
+var _completing = false  # guards against re-entry while a mint is in flight
 
 # Animation
 @onready var door_sprite: AnimatedSprite2D = $DoorSprite
@@ -36,38 +37,50 @@ func lock():
 		#$ColorRect.color = Color.RED
 
 func _on_body_entered(body):
-	if body.is_in_group("player") and not is_locked:
+	if body.is_in_group("player") and not is_locked and not _completing:
+		_completing = true
+
 		# DAILY CHALLENGE MODE
 		if GameState.is_daily_challenge:
 			print("🎲 Daily challenge completed!")
 			await GameState.complete_daily_challenge(GameState.current_bug)
-			
+
 			# Show completion screen with time
 			show_daily_completion_screen()
 			return
-		
+
 		# CAMPAIGN MODE
 		if GameState.campaign_mode:
 			# Mark bug as completed locally
 			GameState.complete_bug(GameState.current_bug)
-			
-			# Mint NFT if wallet connected
+
+			# Mint NFT if wallet connected — surface the outcome to the player
+			# instead of firing and forgetting. mint_campaign_nft returns
+			# true only on a confirmed on-chain mint.
 			if GameState.wallet_connected:
-				# Get full metadata for this bug from BugData
 				var metadata = BugData.get_bug_metadata(GameState.current_bug)
-				SolanaManager.mint_campaign_nft(GameState.current_bug, metadata)
-			
-			# Check if this was the last bug
+				show_status_notice("Minting Bug #%d NFT…" % GameState.current_bug, false)
+				var minted = await SolanaManager.mint_campaign_nft(GameState.current_bug, metadata)
+				if minted:
+					show_status_notice("NFT minted! ✅", false)
+				else:
+					# covers both mint rejection and API/fetch failure
+					show_status_notice("Mint unavailable — progress saved locally ⚠️", true)
+				await get_tree().create_timer(1.5).timeout
+
+			# These scene changes run inside the body_entered PHYSICS callback.
+			# Freeing CollisionObjects mid-callback is illegal in Godot, so
+			# defer them to the idle frame.
 			if GameState.current_bug >= 20:
 				# Campaign complete!
-				get_tree().change_scene_to_file("res://Scene/campaign_complete.tscn")
+				get_tree().change_scene_to_file.call_deferred("res://Scene/campaign_complete.tscn")
 			else:
 				# Go to next bug
 				GameState.current_bug += 1
-				get_tree().reload_current_scene()
+				get_tree().call_deferred("reload_current_scene")
 		else:
-			# Free play mode - just restart
-			get_tree().reload_current_scene()
+			# Free play mode - just restart (deferred: physics callback)
+			get_tree().call_deferred("reload_current_scene")
 
 func show_daily_completion_screen():
 	# Create popup showing completion time and tier
@@ -126,8 +139,26 @@ func show_daily_completion_screen():
 	continue_btn.text = "CONTINUE"
 	continue_btn.position = Vector2(200, 300)
 	continue_btn.size = Vector2(200, 60)
-	continue_btn.pressed.connect(func(): 
+	continue_btn.pressed.connect(func():
 		popup.queue_free()
 		get_tree().change_scene_to_file("res://Scene/main_menu.tscn")
 	)
 	popup.add_child(continue_btn)
+
+# Transient on-screen notice for mint status and fetch failures, so the
+# player is never left staring at a silent screen. Green for info, red for
+# errors. Auto-dismisses; safe to call from a physics callback (adds to the
+# scene tree root, not this Area2D).
+func show_status_notice(msg: String, is_error: bool):
+	var label = Label.new()
+	label.text = msg
+	label.add_theme_font_size_override("font_size", 26)
+	label.modulate = Color(1.0, 0.5, 0.5) if is_error else Color(0.6, 1.0, 0.6)
+	label.position = Vector2(340, 40)
+	label.z_index = 200
+	get_tree().root.add_child(label)
+	var timer = get_tree().create_timer(4.0)
+	timer.timeout.connect(func():
+		if is_instance_valid(label):
+			label.queue_free()
+	)

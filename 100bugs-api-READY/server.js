@@ -47,6 +47,43 @@ const provider = new anchor.AnchorProvider(connection, new anchor.Wallet(gameAut
 });
 const program = new anchor.Program(IDL, provider);
 
+// --------- process-level safety net ---------
+// A rejected RPC promise or a throw outside a handler must NOT take the
+// whole server down (previously this killed the process on a bad mint).
+process.on('unhandledRejection', (reason) => {
+  console.error('⚠️  unhandledRejection:', reason && reason.stack ? reason.stack : reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('⚠️  uncaughtException:', err && err.stack ? err.stack : err);
+  // stay alive: a single bad request must not silence the server
+});
+
+// Wrap an async route so any throw is logged and always produces a
+// response, and so a rejected promise can never hang the request.
+function asyncHandler(name, fn) {
+  return function (req, res, next) {
+    Promise.resolve(fn(req, res, next)).catch((err) => {
+      console.error(`❌ [${name}] threw:`, err && err.message ? err.message : err);
+      if (err && err.stack) console.error(err.stack);
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, error: (err && err.message) || 'internal error' });
+      }
+    });
+  };
+}
+
+// Reject an awaited promise (e.g. a hung RPC call) after ms milliseconds
+// so a request can never hang forever with no response.
+function withTimeout(promise, ms, label) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+const RPC_TIMEOUT_MS = 20000;
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -123,126 +160,130 @@ app.get('/idl', (req, res) => {
   res.json(IDL);
 });
 
-app.post('/mint-campaign-nft', async (req, res) => {
-  try {
-    const { wallet, name, imageUri } = req.body;
-    const bugId = parseBugId(req.body.bugId);
-    const campaignId = parseCampaignId(req.body.campaignId ?? CAMPAIGN_ID);
+app.post('/mint-campaign-nft', asyncHandler('mint', async (req, res) => {
+  const { wallet, name, imageUri } = req.body;
+  const bugId = parseBugId(req.body.bugId);
+  const campaignId = parseCampaignId(req.body.campaignId ?? CAMPAIGN_ID);
 
-    const playerPubkey = wallet ? parseWallet(wallet) : null;
-    if (!playerPubkey) {
-      return res.status(400).json({ success: false, error: 'Valid wallet address is required' });
-    }
-    if (!bugId) {
-      return res.status(400).json({ success: false, error: 'bugId must be an integer 1-20' });
-    }
-    if (!campaignId) {
-      return res.status(400).json({ success: false, error: 'campaignId must be an integer 1-255' });
-    }
-
-    console.log(`\n${'='.repeat(60)}`);
-    console.log(`🎨 MINTING NFT - Bug #${bugId} (campaign ${campaignId})`);
-    console.log(`👤 Wallet: ${wallet}`);
-
-    const campaign = campaignPda(campaignId);
-    const completion = completionPda(campaignId, playerPubkey, bugId);
-    const progress = progressPda(campaignId, playerPubkey);
-    const [collectionAuthority] = derivePDA(
-      [Buffer.from('collection'), COLLECTION_ADDRESS.toBuffer()],
-      PROGRAM_ID
-    );
-
-    {
-      const completionAccount = await program.account.campaignCompletion.fetchNullable(completion);
-
-      if (completionAccount?.nftMintAddress) {
-        return res.status(409).json({
-          success: false,
-          error: 'NFT already minted for this bug',
-          nftAddress: completionAccount.nftMintAddress.toString(),
-        });
-      }
-
-      const assetKeypair = Keypair.generate();
-      const instructions = [];
-
-      if (!completionAccount) {
-        instructions.push(
-          await program.methods
-            .startCampaign(campaignId, bugId)
-            .accounts({
-              player: playerPubkey,
-              campaignCompletion: completion,
-              campaign,
-              systemProgram: SystemProgram.programId,
-            })
-            .instruction()
-        );
-      }
-
-      if (!completionAccount?.campaignEnd) {
-        instructions.push(
-          await program.methods
-            .recordCampaignCompletion(campaignId, bugId)
-            .accounts({
-              player: playerPubkey,
-              gameAuthority: gameAuthority.publicKey,
-              campaignCompletion: completion,
-              playerProgress: progress,
-              campaign,
-              systemProgram: SystemProgram.programId,
-            })
-            .instruction()
-        );
-      }
-
-      instructions.push(
-        await program.methods
-          .mintNft(campaignId, bugId, name || `Bug #${bugId}`, imageUri || '')
-          .accounts({
-            player: playerPubkey,
-            asset: assetKeypair.publicKey,
-            collection: COLLECTION_ADDRESS,
-            collectionAuthority,
-            campaignCompletion: completion,
-            coreProgram: CORE_PROGRAM_ID,
-            systemProgram: SystemProgram.programId,
-          })
-          .instruction()
-      );
-
-      const tx = new Transaction().add(...instructions);
-      tx.feePayer = playerPubkey;
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
-      tx.recentBlockhash = blockhash;
-      // Server signs as game authority (required for record_campaign_completion)
-      // and as the ephemeral asset. The asset secret key never leaves the server.
-      tx.partialSign(gameAuthority, assetKeypair);
-
-      const serialized = tx
-        .serialize({ requireAllSignatures: false, verifySignatures: false })
-        .toString('base64');
-
-      console.log(`✅ Partially-signed transaction built (${instructions.length} instructions)`);
-      console.log(`   NFT will be: ${assetKeypair.publicKey.toString()}\n`);
-
-      return res.json({
-        success: true,
-        transaction: serialized, // base64; player signs as fee payer and submits
-        lastValidBlockHeight,
-        nftAddress: assetKeypair.publicKey.toString(),
-        campaignId,
-        bugId,
-      });
-    }
-  } catch (error) {
-    console.error('\n❌ MINTING FAILED:', error.message);
-    if (error.stack) console.error(error.stack);
-    res.status(500).json({ success: false, error: error.message });
+  const playerPubkey = wallet ? parseWallet(wallet) : null;
+  if (!playerPubkey) {
+    console.log('↩︎ mint 400: invalid wallet');
+    return res.status(400).json({ success: false, error: 'Valid wallet address is required' });
   }
-});
+  if (!bugId) {
+    console.log('↩︎ mint 400: bad bugId', req.body.bugId);
+    return res.status(400).json({ success: false, error: 'bugId must be an integer 1-20' });
+  }
+  if (!campaignId) {
+    console.log('↩︎ mint 400: bad campaignId', req.body.campaignId);
+    return res.status(400).json({ success: false, error: 'campaignId must be an integer 1-255' });
+  }
 
-app.get('/campaign-stats/:id', async (req, res) => {
+  console.log(`\n${'='.repeat(60)}`);
+  console.log(`🎨 MINTING NFT - Bug #${bugId} (campaign ${campaignId})`);
+  console.log(`👤 Wallet: ${wallet}`);
+
+  const campaign = campaignPda(campaignId);
+  const completion = completionPda(campaignId, playerPubkey, bugId);
+  const progress = progressPda(campaignId, playerPubkey);
+  const [collectionAuthority] = derivePDA(
+    [Buffer.from('collection'), COLLECTION_ADDRESS.toBuffer()],
+    PROGRAM_ID
+  );
+
+  const completionAccount = await withTimeout(
+    program.account.campaignCompletion.fetchNullable(completion),
+    RPC_TIMEOUT_MS,
+    'fetch completion account'
+  );
+
+  if (completionAccount?.nftMintAddress) {
+    const nftAddress = completionAccount.nftMintAddress.toString();
+    console.log(`↩︎ mint 409: bug #${bugId} already minted -> ${nftAddress}`);
+    return res.status(409).json({
+      success: false,
+      error: 'NFT already minted for this bug',
+      nftAddress,
+    });
+  }
+
+  const assetKeypair = Keypair.generate();
+  const instructions = [];
+
+  if (!completionAccount) {
+    instructions.push(
+      await program.methods
+        .startCampaign(campaignId, bugId)
+        .accounts({
+          player: playerPubkey,
+          campaignCompletion: completion,
+          campaign,
+          systemProgram: SystemProgram.programId,
+        })
+        .instruction()
+    );
+  }
+
+  if (!completionAccount?.campaignEnd) {
+    instructions.push(
+      await program.methods
+        .recordCampaignCompletion(campaignId, bugId)
+        .accounts({
+          player: playerPubkey,
+          gameAuthority: gameAuthority.publicKey,
+          campaignCompletion: completion,
+          playerProgress: progress,
+          campaign,
+          systemProgram: SystemProgram.programId,
+        })
+        .instruction()
+    );
+  }
+
+  instructions.push(
+    await program.methods
+      .mintNft(campaignId, bugId, name || `Bug #${bugId}`, imageUri || '')
+      .accounts({
+        player: playerPubkey,
+        asset: assetKeypair.publicKey,
+        collection: COLLECTION_ADDRESS,
+        collectionAuthority,
+        campaignCompletion: completion,
+        coreProgram: CORE_PROGRAM_ID,
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction()
+  );
+
+  const tx = new Transaction().add(...instructions);
+  tx.feePayer = playerPubkey;
+  const { blockhash, lastValidBlockHeight } = await withTimeout(
+    connection.getLatestBlockhash('confirmed'),
+    RPC_TIMEOUT_MS,
+    'fetch blockhash'
+  );
+  tx.recentBlockhash = blockhash;
+  // Server signs as game authority (required for record_campaign_completion)
+  // and as the ephemeral asset. The asset secret key never leaves the server.
+  tx.partialSign(gameAuthority, assetKeypair);
+
+  const serialized = tx
+    .serialize({ requireAllSignatures: false, verifySignatures: false })
+    .toString('base64');
+
+  console.log(`✅ mint 200: built ${instructions.length} instructions, NFT ${assetKeypair.publicKey.toString()}\n`);
+
+  return res.json({
+    success: true,
+    transaction: serialized, // base64; player signs as fee payer and submits
+    lastValidBlockHeight,
+    nftAddress: assetKeypair.publicKey.toString(),
+    campaignId,
+    bugId,
+  });
+}));
+
+app.get('/campaign-stats/:id', asyncHandler('campaign-stats', async (req, res) => {
   const campaignId = parseCampaignId(req.params.id);
   if (!campaignId) {
     return res.status(400).json({ success: false, error: 'campaign id must be 1-255' });
@@ -264,12 +305,12 @@ app.get('/campaign-stats/:id', async (req, res) => {
     console.error('❌ campaign-stats failed:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
-});
+}));
 
 // Today's bug comes from the on-chain DailyBug singleton PDA, set by the
 // request_daily_bug -> consume_daily_bug VRF flow. If no bug has been
 // consumed yet, report that honestly instead of inventing one.
-app.get('/daily-bug', async (req, res) => {
+app.get('/daily-bug', asyncHandler('daily-bug', async (req, res) => {
   try {
     const [bugStatePda] = derivePDA([Buffer.from('daily_bug_seed')], PROGRAM_ID);
     const state = await program.account.dailyBug.fetchNullable(bugStatePda);
@@ -307,9 +348,9 @@ app.get('/daily-bug', async (req, res) => {
     console.error('❌ daily-bug failed:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
-});
+}));
 
-app.get('/has-completed-bug/:wallet/:bugId', async (req, res) => {
+app.get('/has-completed-bug/:wallet/:bugId', asyncHandler('has-completed-bug', async (req, res) => {
   const playerPubkey = parseWallet(req.params.wallet);
   const bugId = parseBugId(req.params.bugId);
   const campaignId = parseCampaignId(req.query.campaignId ?? CAMPAIGN_ID);
@@ -341,9 +382,9 @@ app.get('/has-completed-bug/:wallet/:bugId', async (req, res) => {
     console.error('❌ has-completed-bug failed:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
-});
+}));
 
-app.get('/player-progress/:wallet', async (req, res) => {
+app.get('/player-progress/:wallet', asyncHandler('player-progress', async (req, res) => {
   const playerPubkey = parseWallet(req.params.wallet);
   const campaignId = parseCampaignId(req.query.campaignId ?? CAMPAIGN_ID);
   if (!playerPubkey) {
@@ -369,7 +410,7 @@ app.get('/player-progress/:wallet', async (req, res) => {
     console.error('❌ player-progress failed:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
-});
+}));
 
 function getBugDifficulty(bugId) {
   if (bugId === 1) return 'Tutorial';
