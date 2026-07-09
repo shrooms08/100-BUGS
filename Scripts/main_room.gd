@@ -90,9 +90,9 @@ func _on_button_pressed():
 		$Door.unlock()
 
 func _on_reverse_button_pressed():
-	$Door.is_locked = true
-	if $Door.has_node("ColorRect"):
-		$Door.get_node("ColorRect").color = Color.RED
+	# Bug 19: touching the button resets the player; the door stays open
+	if has_node("Player"):
+		$Player.die()
 
 func _on_player_entered_button():
 	player_on_button = true

@@ -60,7 +60,7 @@ func _on_body_entered(body):
 			# Check if this was the last bug
 			if GameState.current_bug >= 20:
 				# Campaign complete!
-				get_tree().change_scene_to_file("res://Scenes/CampaignComplete.tscn")
+				get_tree().change_scene_to_file("res://Scene/campaign_complete.tscn")
 			else:
 				# Go to next bug
 				GameState.current_bug += 1

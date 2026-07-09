@@ -56,7 +56,7 @@ func update_countdown_display():
 
 func _on_play_pressed():
 	# Load the daily bug level
-	GameState.current_bug_id = current_bug_id
+	GameState.current_bug = current_bug_id
 	GameState.start_daily_challenge()  # Flag for special handling
 	get_tree().change_scene_to_file("res://Scene/main_room.tscn")
 

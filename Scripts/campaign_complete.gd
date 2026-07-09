@@ -5,4 +5,4 @@ func _ready():
 
 func _on_back_pressed():
 	GameState.campaign_mode = false
-	get_tree().change_scene_to_file("res://Scene/main_room.tscn")
+	get_tree().change_scene_to_file("res://Scene/main_menu.tscn")
