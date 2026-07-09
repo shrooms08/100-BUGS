@@ -1,5 +1,5 @@
 {
-  "address": "AuXF95nT7WS865AzQpuj3os9r6DjTYY9ekh4mGgG6gfL",
+  "address": "5Umbkpc5FH121y9h32mS3B1mZVpkNNghM9u7CbQp63a2",
   "metadata": {
     "name": "cmpgn",
     "version": "0.1.0",
@@ -7,6 +7,130 @@
     "description": "Created with Anchor"
   },
   "instructions": [
+    {
+      "name": "consume_daily_bug",
+      "discriminator": [
+        4,
+        44,
+        104,
+        37,
+        96,
+        82,
+        189,
+        247
+      ],
+      "accounts": [
+        {
+          "name": "bug_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  97,
+                  105,
+                  108,
+                  121,
+                  95,
+                  98,
+                  117,
+                  103,
+                  95,
+                  115,
+                  101,
+                  101,
+                  100
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "random",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  111,
+                  45,
+                  118,
+                  114,
+                  102,
+                  45,
+                  114,
+                  97,
+                  110,
+                  100,
+                  111,
+                  109,
+                  110,
+                  101,
+                  115,
+                  115,
+                  45,
+                  114,
+                  101,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "bug_state.force",
+                "account": "DailyBug"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                7,
+                71,
+                177,
+                26,
+                250,
+                145,
+                180,
+                209,
+                249,
+                34,
+                242,
+                123,
+                14,
+                186,
+                193,
+                218,
+                178,
+                59,
+                33,
+                41,
+                164,
+                190,
+                243,
+                79,
+                50,
+                164,
+                123,
+                88,
+                245,
+                206,
+                252,
+                120
+              ]
+            }
+          }
+        }
+      ],
+      "args": []
+    },
     {
       "name": "create_collection",
       "discriminator": [
@@ -159,26 +283,6 @@
       ]
     },
     {
-      "name": "get_daily_bug",
-      "discriminator": [
-        169,
-        229,
-        236,
-        9,
-        111,
-        118,
-        129,
-        103
-      ],
-      "accounts": [
-        {
-          "name": "player",
-          "signer": true
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "get_player_progress",
       "discriminator": [
         179,
@@ -306,7 +410,10 @@
       ],
       "accounts": [
         {
-          "name": "game_authority",
+          "name": "payer",
+          "docs": [
+            "Must be the program's upgrade authority; pays for the campaign account."
+          ],
           "writable": true,
           "signer": true
         },
@@ -336,6 +443,13 @@
           }
         },
         {
+          "name": "program",
+          "address": "5Umbkpc5FH121y9h32mS3B1mZVpkNNghM9u7CbQp63a2"
+        },
+        {
+          "name": "program_data"
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
@@ -344,6 +458,10 @@
         {
           "name": "campaign_id",
           "type": "u8"
+        },
+        {
+          "name": "game_authority",
+          "type": "pubkey"
         }
       ]
     },
@@ -482,6 +600,10 @@
           "signer": true
         },
         {
+          "name": "game_authority",
+          "signer": true
+        },
+        {
           "name": "campaign_completion",
           "writable": true,
           "pda": {
@@ -583,6 +705,237 @@
         {
           "name": "bug_id",
           "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "request_daily_bug",
+      "discriminator": [
+        189,
+        58,
+        107,
+        143,
+        202,
+        206,
+        10,
+        175
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "bug_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  97,
+                  105,
+                  108,
+                  121,
+                  95,
+                  98,
+                  117,
+                  103,
+                  95,
+                  115,
+                  101,
+                  101,
+                  100
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "random",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  111,
+                  45,
+                  118,
+                  114,
+                  102,
+                  45,
+                  114,
+                  97,
+                  110,
+                  100,
+                  111,
+                  109,
+                  110,
+                  101,
+                  115,
+                  115,
+                  45,
+                  114,
+                  101,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "force"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                7,
+                71,
+                177,
+                26,
+                250,
+                145,
+                180,
+                209,
+                249,
+                34,
+                242,
+                123,
+                14,
+                186,
+                193,
+                218,
+                178,
+                59,
+                33,
+                41,
+                164,
+                190,
+                243,
+                79,
+                50,
+                164,
+                123,
+                88,
+                245,
+                206,
+                252,
+                120
+              ]
+            }
+          }
+        },
+        {
+          "name": "treasury",
+          "writable": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  111,
+                  45,
+                  118,
+                  114,
+                  102,
+                  45,
+                  110,
+                  101,
+                  116,
+                  119,
+                  111,
+                  114,
+                  107,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  117,
+                  114,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                7,
+                71,
+                177,
+                26,
+                250,
+                145,
+                180,
+                209,
+                249,
+                34,
+                242,
+                123,
+                14,
+                186,
+                193,
+                218,
+                178,
+                59,
+                33,
+                41,
+                164,
+                190,
+                243,
+                79,
+                50,
+                164,
+                123,
+                88,
+                245,
+                206,
+                252,
+                120
+              ]
+            }
+          }
+        },
+        {
+          "name": "vrf",
+          "address": "VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "force",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
         }
       ]
     },
@@ -722,6 +1075,32 @@
       ]
     },
     {
+      "name": "DailyBug",
+      "discriminator": [
+        212,
+        192,
+        102,
+        167,
+        131,
+        81,
+        35,
+        159
+      ]
+    },
+    {
+      "name": "NetworkState",
+      "discriminator": [
+        212,
+        237,
+        148,
+        56,
+        97,
+        245,
+        51,
+        169
+      ]
+    },
+    {
       "name": "PlayerProgress",
       "discriminator": [
         58,
@@ -849,6 +1228,31 @@
       "code": 6011,
       "name": "NftAlreadyMinted",
       "msg": "NFT already minted"
+    },
+    {
+      "code": 6012,
+      "name": "BugAlreadyRequested",
+      "msg": "Daily bug already requested today"
+    },
+    {
+      "code": 6013,
+      "name": "BugNotRequested",
+      "msg": "Daily bug not requested"
+    },
+    {
+      "code": 6014,
+      "name": "RandomnessNotFulfilled",
+      "msg": "Randomness not fulfilled"
+    },
+    {
+      "code": 6015,
+      "name": "BugAlreadyConsumed",
+      "msg": "Daily Bug already consumed"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidGameAuthority",
+      "msg": "Signer is not the campaign's game authority."
     }
   ],
   "types": [
@@ -867,7 +1271,7 @@
           },
           {
             "name": "total_completions",
-            "type": "u8"
+            "type": "u32"
           },
           {
             "name": "bump",
@@ -935,7 +1339,7 @@
           },
           {
             "name": "total_completions",
-            "type": "u8"
+            "type": "u32"
           }
         ]
       }
@@ -1017,6 +1421,33 @@
       }
     },
     {
+      "name": "DailyBug",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bug_id",
+            "type": {
+              "option": "u8"
+            }
+          },
+          {
+            "name": "day",
+            "type": "i64"
+          },
+          {
+            "name": "force",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "DailyBugEvent",
       "type": {
         "kind": "struct",
@@ -1024,6 +1455,94 @@
           {
             "name": "bug_id",
             "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NetworkConfiguration",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "request_fee",
+            "type": "u64"
+          },
+          {
+            "name": "fulfillment_authorities",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "token_fee_config",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "OraoTokenFeeConfig"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "NetworkState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": {
+              "defined": {
+                "name": "NetworkConfiguration"
+              }
+            }
+          },
+          {
+            "name": "num_received",
+            "docs": [
+              "Total number of received requests."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OraoTokenFeeConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "docs": [
+              "ORAO token mint address."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "docs": [
+              "ORAO token treasury account."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "fee",
+            "docs": [
+              "Fee in ORAO SPL token smallest units."
+            ],
+            "type": "u64"
           }
         ]
       }

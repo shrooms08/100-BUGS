@@ -1,39 +1,121 @@
 const express = require('express');
 const cors = require('cors');
-const { PublicKey, Keypair, SystemProgram, Connection } = require('@solana/web3.js');
+const { PublicKey, Keypair, SystemProgram, Connection, Transaction } = require('@solana/web3.js');
 const anchor = require('@coral-xyz/anchor');
 require('dotenv').config();
+
+// ---------- configuration (env-driven, no hardcoded fallbacks) ----------
+
+function requireEnv(...names) {
+  for (const n of names) {
+    if (process.env[n]) return process.env[n];
+  }
+  console.error(`❌ Missing required env var: ${names.join(' or ')} (check .env)`);
+  process.exit(1);
+}
+
+const PORT = parseInt(requireEnv('PORT'), 10);
+const PROGRAM_ID = new PublicKey(requireEnv('PROGRAM_ID'));
+const COLLECTION_ADDRESS = new PublicKey(
+  requireEnv('COLLECTION_ADDRESS', 'COLLECTION_PUBLIC_KEY')
+);
+const CAMPAIGN_ID = parseInt(requireEnv('CAMPAIGN_ID'), 10);
+const USE_REAL_BLOCKCHAIN = process.env.USE_REAL_BLOCKCHAIN === 'true';
+
+// Metaplex Core has a single fixed program id on every cluster
+const CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d');
+
+// Game authority: co-signs record_campaign_completion (required signer on-chain)
+const gameAuthority = Keypair.fromSecretKey(
+  new Uint8Array(JSON.parse(requireEnv('WALLET_PRIVATE_KEY')))
+);
+
+const IDL = require('./idl.json');
+if (IDL.address !== PROGRAM_ID.toString()) {
+  console.error(
+    `❌ idl.json address (${IDL.address}) does not match PROGRAM_ID (${PROGRAM_ID}). ` +
+      'Re-export the IDL from the program build.'
+  );
+  process.exit(1);
+}
+
+const connection = new Connection(
+  process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com',
+  'confirmed'
+);
+const provider = new anchor.AnchorProvider(connection, new anchor.Wallet(gameAuthority), {
+  commitment: 'confirmed',
+});
+const program = new anchor.Program(IDL, provider);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PROGRAM_ID = new PublicKey('AuXF95nT7WS865AzQpuj3os9r6DjTYY9ekh4mGgG6gfL');
-const CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d');
-const COLLECTION_ADDRESS = new PublicKey(process.env.COLLECTION_ADDRESS || '3ZQPh5QRLuGfNhY3hbCC8e5AYiLEaWaFoYVxdvTpz9gi');
-
-// Load IDL
-const IDL = require('./idl.json');
-
-// Connection to Solana (for reading state, not signing)
-const connection = process.env.SOLANA_RPC_URL 
-  ? new Connection(process.env.SOLANA_RPC_URL, 'confirmed')
-  : new Connection('https://api.devnet.solana.com', 'confirmed');
-
-const USE_REAL_BLOCKCHAIN = process.env.USE_REAL_BLOCKCHAIN === 'true';
-
 console.log('🚀 100 Bugs Solana API');
 console.log('Program:', PROGRAM_ID.toString());
 console.log('Collection:', COLLECTION_ADDRESS.toString());
+console.log('Campaign:', CAMPAIGN_ID);
+console.log('Game authority:', gameAuthority.publicKey.toString());
 console.log('Mode:', USE_REAL_BLOCKCHAIN ? 'REAL BLOCKCHAIN' : 'DEMO MODE');
 console.log('RPC:', connection.rpcEndpoint);
 console.log('');
 
+// ---------- helpers ----------
+
+function derivePDA(seeds, programId) {
+  return PublicKey.findProgramAddressSync(seeds, programId);
+}
+
+function parseWallet(value) {
+  try {
+    return new PublicKey(value);
+  } catch {
+    return null;
+  }
+}
+
+function parseBugId(value) {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 && n <= 20 ? n : null;
+}
+
+function parseCampaignId(value) {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 && n <= 255 ? n : null;
+}
+
+function completionPda(campaignId, playerPubkey, bugId) {
+  return derivePDA(
+    [
+      Buffer.from('completion'),
+      Buffer.from([campaignId]),
+      playerPubkey.toBuffer(),
+      Buffer.from([bugId]),
+    ],
+    PROGRAM_ID
+  )[0];
+}
+
+function progressPda(campaignId, playerPubkey) {
+  return derivePDA(
+    [Buffer.from('progress'), Buffer.from([campaignId]), playerPubkey.toBuffer()],
+    PROGRAM_ID
+  )[0];
+}
+
+function campaignPda(campaignId) {
+  return derivePDA([Buffer.from('campaign'), Buffer.from([campaignId])], PROGRAM_ID)[0];
+}
+
+// ---------- endpoints ----------
+
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     programId: PROGRAM_ID.toString(),
-    mode: USE_REAL_BLOCKCHAIN ? 'real' : 'demo'
+    campaignId: CAMPAIGN_ID,
+    mode: USE_REAL_BLOCKCHAIN ? 'real' : 'demo',
   });
 });
 
@@ -42,247 +124,245 @@ app.get('/idl', (req, res) => {
   res.json(IDL);
 });
 
-// Helper function to derive PDAs
-function derivePDA(seeds, programId) {
-  return PublicKey.findProgramAddressSync(seeds, programId);
-}
-
 app.post('/mint-campaign-nft', async (req, res) => {
   try {
-    const { wallet, bugId, name, imageUri, campaignId = 1 } = req.body;
-    
-    if (!wallet) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Wallet address is required' 
-      });
+    const { wallet, name, imageUri } = req.body;
+    const bugId = parseBugId(req.body.bugId);
+    const campaignId = parseCampaignId(req.body.campaignId ?? CAMPAIGN_ID);
+
+    const playerPubkey = wallet ? parseWallet(wallet) : null;
+    if (!playerPubkey) {
+      return res.status(400).json({ success: false, error: 'Valid wallet address is required' });
     }
-    
+    if (!bugId) {
+      return res.status(400).json({ success: false, error: 'bugId must be an integer 1-20' });
+    }
+    if (!campaignId) {
+      return res.status(400).json({ success: false, error: 'campaignId must be an integer 1-255' });
+    }
+
     console.log(`\n${'='.repeat(60)}`);
-    console.log(`🎨 MINTING NFT - Bug #${bugId}`);
-    console.log(`${'='.repeat(60)}`);
+    console.log(`🎨 MINTING NFT - Bug #${bugId} (campaign ${campaignId})`);
     console.log(`👤 Wallet: ${wallet}`);
-    console.log(`📝 Name: ${name}`);
-    console.log(`🖼️  Image: ${imageUri?.substring(0, 50)}...`);
-    console.log(`📋 Campaign ID: ${campaignId}`);
-    
-    const playerPubkey = new PublicKey(wallet);
-    
-    // Derive PDAs
-    const [campaignPda] = derivePDA(
-      [Buffer.from('campaign'), Buffer.from([campaignId])],
-      PROGRAM_ID
-    );
-    
-    const [campaignCompletionPda] = derivePDA(
-      [
-        Buffer.from('completion'),
-        Buffer.from([campaignId]),
-        playerPubkey.toBuffer(),
-        Buffer.from([bugId])
-      ],
-      PROGRAM_ID
-    );
-    
-    const [collectionAuthorityPda] = derivePDA(
+
+    const campaign = campaignPda(campaignId);
+    const completion = completionPda(campaignId, playerPubkey, bugId);
+    const progress = progressPda(campaignId, playerPubkey);
+    const [collectionAuthority] = derivePDA(
       [Buffer.from('collection'), COLLECTION_ADDRESS.toBuffer()],
       PROGRAM_ID
     );
-    
-    const [playerProgressPda] = derivePDA(
-      [
-        Buffer.from('progress'),
-        Buffer.from([campaignId]),
-        playerPubkey.toBuffer()
-      ],
-      PROGRAM_ID
-    );
-    
-    // Generate NFT asset keypair (client will sign this)
-    const assetKeypair = Keypair.generate();
-    
-    console.log(`\n📍 PDAs:`);
-    console.log(`   Campaign: ${campaignPda.toString()}`);
-    console.log(`   Completion: ${campaignCompletionPda.toString()}`);
-    console.log(`   Collection Authority: ${collectionAuthorityPda.toString()}`);
-    console.log(`   Asset (NFT): ${assetKeypair.publicKey.toString()}`);
-    
+
     if (USE_REAL_BLOCKCHAIN) {
-      // Check if campaign completion exists (if not, need to start campaign first)
-      let needsStartCampaign = false;
-      try {
-        const completionAccount = await connection.getAccountInfo(campaignCompletionPda);
-        needsStartCampaign = !completionAccount;
-      } catch (e) {
-        needsStartCampaign = true;
-      }
-      
-      // Build transaction instructions
-      const instructions = [];
-      
-      // Step 1: Start campaign if needed
-      if (needsStartCampaign) {
-        console.log(`\n📝 Step 1: Building start_campaign instruction...`);
-        instructions.push({
-          type: 'start_campaign',
-          programId: PROGRAM_ID.toString(),
-          accounts: {
-            player: wallet,
-            campaignCompletion: campaignCompletionPda.toString(),
-            campaign: campaignPda.toString(),
-            systemProgram: SystemProgram.programId.toString()
-          },
-          args: {
-            campaign_id: campaignId,
-            bug_id: bugId
-          }
+      const completionAccount = await program.account.campaignCompletion.fetchNullable(completion);
+
+      if (completionAccount?.nftMintAddress) {
+        return res.status(409).json({
+          success: false,
+          error: 'NFT already minted for this bug',
+          nftAddress: completionAccount.nftMintAddress.toString(),
         });
       }
-      
-      // Step 2: Record completion
-      console.log(`\n📝 Step 2: Building record_campaign_completion instruction...`);
-      instructions.push({
-        type: 'record_campaign_completion',
-        programId: PROGRAM_ID.toString(),
-        accounts: {
-          player: wallet,
-          campaignCompletion: campaignCompletionPda.toString(),
-          playerProgress: playerProgressPda.toString(),
-          campaign: campaignPda.toString(),
-          systemProgram: SystemProgram.programId.toString()
-        },
-        args: {
-          campaign_id: campaignId,
-          bug_id: bugId
-        }
-      });
-      
-      // Step 3: Mint NFT
-      console.log(`\n📝 Step 3: Building mint_nft instruction...`);
-      instructions.push({
-        type: 'mint_nft',
-        programId: PROGRAM_ID.toString(),
-        accounts: {
-          player: wallet,
-          asset: assetKeypair.publicKey.toString(),
-          collection: COLLECTION_ADDRESS.toString(),
-          collectionAuthority: collectionAuthorityPda.toString(),
-          campaignCompletion: campaignCompletionPda.toString(),
-          coreProgram: CORE_PROGRAM_ID.toString(),
-          systemProgram: SystemProgram.programId.toString()
-        },
-        args: {
-          campaign_id: campaignId,
-          bug_id: bugId,
-          name: name,
-          nft_uri: imageUri || ''
-        },
-        signers: [assetKeypair.secretKey] // Client needs to sign with this keypair
-      });
-      
-      console.log(`\n✅ Transaction instructions built!`);
-      console.log(`   Instructions: ${instructions.length}`);
-      console.log(`   Client will sign and send...\n`);
-      
-      res.json({
+
+      const assetKeypair = Keypair.generate();
+      const instructions = [];
+
+      if (!completionAccount) {
+        instructions.push(
+          await program.methods
+            .startCampaign(campaignId, bugId)
+            .accounts({
+              player: playerPubkey,
+              campaignCompletion: completion,
+              campaign,
+              systemProgram: SystemProgram.programId,
+            })
+            .instruction()
+        );
+      }
+
+      if (!completionAccount?.campaignEnd) {
+        instructions.push(
+          await program.methods
+            .recordCampaignCompletion(campaignId, bugId)
+            .accounts({
+              player: playerPubkey,
+              gameAuthority: gameAuthority.publicKey,
+              campaignCompletion: completion,
+              playerProgress: progress,
+              campaign,
+              systemProgram: SystemProgram.programId,
+            })
+            .instruction()
+        );
+      }
+
+      instructions.push(
+        await program.methods
+          .mintNft(campaignId, bugId, name || `Bug #${bugId}`, imageUri || '')
+          .accounts({
+            player: playerPubkey,
+            asset: assetKeypair.publicKey,
+            collection: COLLECTION_ADDRESS,
+            collectionAuthority,
+            campaignCompletion: completion,
+            coreProgram: CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .instruction()
+      );
+
+      const tx = new Transaction().add(...instructions);
+      tx.feePayer = playerPubkey;
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+      tx.recentBlockhash = blockhash;
+      // Server signs as game authority (required for record_campaign_completion)
+      // and as the ephemeral asset. The asset secret key never leaves the server.
+      tx.partialSign(gameAuthority, assetKeypair);
+
+      const serialized = tx
+        .serialize({ requireAllSignatures: false, verifySignatures: false })
+        .toString('base64');
+
+      console.log(`✅ Partially-signed transaction built (${instructions.length} instructions)`);
+      console.log(`   NFT will be: ${assetKeypair.publicKey.toString()}\n`);
+
+      return res.json({
         success: true,
-        instructions: instructions,
-        assetKeypair: Array.from(assetKeypair.secretKey), // Send secret key for client to sign
-        campaignId: campaignId,
-        bugId: bugId,
+        transaction: serialized, // base64; player signs as fee payer and submits
+        lastValidBlockHeight,
         nftAddress: assetKeypair.publicKey.toString(),
-        mode: 'real'
+        campaignId,
+        bugId,
+        mode: 'real',
       });
-    } else {
-      // DEMO MODE - return mock data
-      console.log(`\n⏳ DEMO MODE - Simulating transaction...`);
-    await new Promise(r => setTimeout(r, 1500));
-    
+    }
+
+    // DEMO MODE - mock data only (scheduled for removal with the game wiring batch)
+    console.log(`\n⏳ DEMO MODE - Simulating transaction...`);
+    await new Promise((r) => setTimeout(r, 1500));
+
     const mockNFT = Keypair.generate().publicKey.toString();
     const mockTx = generateRealisticTxHash();
-    const mockSolscan = `https://solscan.io/tx/${mockTx}?cluster=devnet`;
-    
-      console.log(`\n✅ NFT MINTED SUCCESSFULLY! (DEMO)`);
-    console.log(`🎨 NFT Address: ${mockNFT}`);
-    console.log(`📜 Transaction: ${mockTx}`);
-    console.log(`${'='.repeat(60)}\n`);
-    
-    res.json({
+
+    return res.json({
       success: true,
       nftAddress: mockNFT,
       transaction: mockTx,
-      solscanUrl: mockSolscan,
-      bugId: bugId,
+      solscanUrl: `https://solscan.io/tx/${mockTx}?cluster=devnet`,
+      bugId,
       bugName: name,
-        timestamp: new Date().toISOString(),
-        mode: 'demo'
+      timestamp: new Date().toISOString(),
+      mode: 'demo',
     });
-    }
-    
   } catch (error) {
     console.error('\n❌ MINTING FAILED:', error.message);
     if (error.stack) console.error(error.stack);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
 app.get('/campaign-stats/:id', async (req, res) => {
-  const campaignId = parseInt(req.params.id);
-  console.log(`\n📊 Campaign ${campaignId} stats requested`);
-  
-  res.json({
-    success: true,
-    campaignId: campaignId,
-    exists: true,
-    totalCompletions: 42,
-    mode: 'demo'
-  });
+  const campaignId = parseCampaignId(req.params.id);
+  if (!campaignId) {
+    return res.status(400).json({ success: false, error: 'campaign id must be 1-255' });
+  }
+
+  try {
+    const account = await program.account.campaign.fetchNullable(campaignPda(campaignId));
+    if (!account) {
+      return res.json({ success: true, campaignId, exists: false });
+    }
+    res.json({
+      success: true,
+      campaignId,
+      exists: true,
+      gameAuthority: account.gameAuthority.toString(),
+      totalCompletions: account.totalCompletions,
+    });
+  } catch (error) {
+    console.error('❌ campaign-stats failed:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 app.get('/daily-bug', (req, res) => {
   const day = Math.floor(Date.now() / 86400000);
   const bugId = (day % 20) + 1;
   const today = new Date().toISOString().split('T')[0];
-  
-  console.log(`\n🎲 Daily bug requested: Bug #${bugId} (${today})`);
-  
+
   res.json({
     success: true,
-    bugId: bugId,
+    bugId,
     date: today,
-    difficulty: getBugDifficulty(bugId)
+    difficulty: getBugDifficulty(bugId),
   });
 });
 
-app.get('/has-completed-bug/:wallet/:bugId', (req, res) => {
-  const { wallet, bugId } = req.params;
-  console.log(`\n🔍 Checking if ${wallet.substring(0, 8)}... completed bug #${bugId}`);
-  
-  res.json({
-    success: true,
-    wallet: wallet,
-    bugId: parseInt(bugId),
-    completed: false
-  });
+app.get('/has-completed-bug/:wallet/:bugId', async (req, res) => {
+  const playerPubkey = parseWallet(req.params.wallet);
+  const bugId = parseBugId(req.params.bugId);
+  const campaignId = parseCampaignId(req.query.campaignId ?? CAMPAIGN_ID);
+  if (!playerPubkey) {
+    return res.status(400).json({ success: false, error: 'invalid wallet address' });
+  }
+  if (!bugId) {
+    return res.status(400).json({ success: false, error: 'bugId must be 1-20' });
+  }
+  if (!campaignId) {
+    return res.status(400).json({ success: false, error: 'campaignId must be 1-255' });
+  }
+
+  try {
+    const account = await program.account.campaignCompletion.fetchNullable(
+      completionPda(campaignId, playerPubkey, bugId)
+    );
+    res.json({
+      success: true,
+      wallet: req.params.wallet,
+      campaignId,
+      bugId,
+      started: !!account,
+      completed: !!account?.campaignEnd,
+      nftMinted: !!account?.nftMintAddress,
+      nftAddress: account?.nftMintAddress?.toString() ?? null,
+    });
+  } catch (error) {
+    console.error('❌ has-completed-bug failed:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
-app.get('/player-progress/:wallet', (req, res) => {
-  const wallet = req.params.wallet;
-  console.log(`\n📈 Player progress requested: ${wallet.substring(0, 8)}...`);
-  
-  res.json({
-    success: true,
-    wallet: wallet,
-    completedBugs: [],
-    totalCompleted: 0,
-    mode: 'demo'
-  });
+app.get('/player-progress/:wallet', async (req, res) => {
+  const playerPubkey = parseWallet(req.params.wallet);
+  const campaignId = parseCampaignId(req.query.campaignId ?? CAMPAIGN_ID);
+  if (!playerPubkey) {
+    return res.status(400).json({ success: false, error: 'invalid wallet address' });
+  }
+  if (!campaignId) {
+    return res.status(400).json({ success: false, error: 'campaignId must be 1-255' });
+  }
+
+  try {
+    const account = await program.account.playerProgress.fetchNullable(
+      progressPda(campaignId, playerPubkey)
+    );
+    const completedBugs = account ? Array.from(account.completedBugs) : [];
+    res.json({
+      success: true,
+      wallet: req.params.wallet,
+      campaignId,
+      completedBugs,
+      totalCompleted: account ? account.totalCompletedBugs : 0,
+    });
+  } catch (error) {
+    console.error('❌ player-progress failed:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 // Helper function to generate realistic transaction hashes
+// (DEMO MODE only - scheduled for removal with the game wiring batch)
 function generateRealisticTxHash() {
   const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
   let hash = '';
@@ -292,7 +372,6 @@ function generateRealisticTxHash() {
   return hash;
 }
 
-// Helper function to get bug difficulty
 function getBugDifficulty(bugId) {
   if (bugId === 1) return 'Tutorial';
   if (bugId <= 5) return 'Easy';
@@ -301,8 +380,7 @@ function getBugDifficulty(bugId) {
   return 'Legendary';
 }
 
-const PORT = 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log('━'.repeat(60));
   console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log(`Mode: ${USE_REAL_BLOCKCHAIN ? 'REAL BLOCKCHAIN' : 'DEMO'}`);
@@ -316,4 +394,12 @@ app.listen(PORT, () => {
   console.log('  GET  /has-completed-bug/:wallet/:bugId');
   console.log('  GET  /player-progress/:wallet');
   console.log('\n🎮 Ready for NFT minting!\n');
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use. Set PORT in .env to a free port.`);
+    process.exit(1);
+  }
+  throw err;
 });
