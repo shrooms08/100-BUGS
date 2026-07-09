@@ -1,0 +1,10 @@
+<!-- Injected into <head> on every Godot web export via
+     export_presets.cfg -> html/head_include. Load order matters:
+     Buffer polyfill, then solanaWeb3 (which references window.Buffer),
+     then config (defines window.API_CONFIG), then the wallet flow.
+     These files must also be copied into the export folder next to
+     index.html (see web/sync-to-export.sh). -->
+<script src="vendor/buffer.js"></script>
+<script src="vendor/solana-web3.iife.min.js"></script>
+<script src="config.js"></script>
+<script src="wallet.js"></script>

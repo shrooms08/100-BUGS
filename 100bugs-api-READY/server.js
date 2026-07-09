@@ -20,7 +20,6 @@ const COLLECTION_ADDRESS = new PublicKey(
   requireEnv('COLLECTION_ADDRESS', 'COLLECTION_PUBLIC_KEY')
 );
 const CAMPAIGN_ID = parseInt(requireEnv('CAMPAIGN_ID'), 10);
-const USE_REAL_BLOCKCHAIN = process.env.USE_REAL_BLOCKCHAIN === 'true';
 
 // Metaplex Core has a single fixed program id on every cluster
 const CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d');
@@ -57,7 +56,7 @@ console.log('Program:', PROGRAM_ID.toString());
 console.log('Collection:', COLLECTION_ADDRESS.toString());
 console.log('Campaign:', CAMPAIGN_ID);
 console.log('Game authority:', gameAuthority.publicKey.toString());
-console.log('Mode:', USE_REAL_BLOCKCHAIN ? 'REAL BLOCKCHAIN' : 'DEMO MODE');
+console.log('Mode: REAL BLOCKCHAIN');
 console.log('RPC:', connection.rpcEndpoint);
 console.log('');
 
@@ -115,7 +114,7 @@ app.get('/health', (req, res) => {
     status: 'ok',
     programId: PROGRAM_ID.toString(),
     campaignId: CAMPAIGN_ID,
-    mode: USE_REAL_BLOCKCHAIN ? 'real' : 'demo',
+    mode: 'real',
   });
 });
 
@@ -153,7 +152,7 @@ app.post('/mint-campaign-nft', async (req, res) => {
       PROGRAM_ID
     );
 
-    if (USE_REAL_BLOCKCHAIN) {
+    {
       const completionAccount = await program.account.campaignCompletion.fetchNullable(completion);
 
       if (completionAccount?.nftMintAddress) {
@@ -234,27 +233,8 @@ app.post('/mint-campaign-nft', async (req, res) => {
         nftAddress: assetKeypair.publicKey.toString(),
         campaignId,
         bugId,
-        mode: 'real',
       });
     }
-
-    // DEMO MODE - mock data only (scheduled for removal with the game wiring batch)
-    console.log(`\n⏳ DEMO MODE - Simulating transaction...`);
-    await new Promise((r) => setTimeout(r, 1500));
-
-    const mockNFT = Keypair.generate().publicKey.toString();
-    const mockTx = generateRealisticTxHash();
-
-    return res.json({
-      success: true,
-      nftAddress: mockNFT,
-      transaction: mockTx,
-      solscanUrl: `https://solscan.io/tx/${mockTx}?cluster=devnet`,
-      bugId,
-      bugName: name,
-      timestamp: new Date().toISOString(),
-      mode: 'demo',
-    });
   } catch (error) {
     console.error('\n❌ MINTING FAILED:', error.message);
     if (error.stack) console.error(error.stack);
@@ -286,17 +266,47 @@ app.get('/campaign-stats/:id', async (req, res) => {
   }
 });
 
-app.get('/daily-bug', (req, res) => {
-  const day = Math.floor(Date.now() / 86400000);
-  const bugId = (day % 20) + 1;
-  const today = new Date().toISOString().split('T')[0];
+// Today's bug comes from the on-chain DailyBug singleton PDA, set by the
+// request_daily_bug -> consume_daily_bug VRF flow. If no bug has been
+// consumed yet, report that honestly instead of inventing one.
+app.get('/daily-bug', async (req, res) => {
+  try {
+    const [bugStatePda] = derivePDA([Buffer.from('daily_bug_seed')], PROGRAM_ID);
+    const state = await program.account.dailyBug.fetchNullable(bugStatePda);
 
-  res.json({
-    success: true,
-    bugId,
-    date: today,
-    difficulty: getBugDifficulty(bugId),
-  });
+    if (!state) {
+      return res.json({
+        success: true,
+        available: false,
+        reason: 'daily bug has never been requested on-chain',
+      });
+    }
+
+    const day = state.day.toNumber ? state.day.toNumber() : Number(state.day);
+    const currentDay = Math.floor(Date.now() / 1000 / 86400);
+
+    if (state.bugId === null || state.bugId === undefined) {
+      return res.json({
+        success: true,
+        available: false,
+        reason: 'daily bug requested but randomness not yet consumed',
+        day,
+      });
+    }
+
+    const bugId = state.bugId;
+    res.json({
+      success: true,
+      available: true,
+      stale: day < currentDay, // on-chain bug is from a previous day
+      bugId,
+      day,
+      difficulty: getBugDifficulty(bugId),
+    });
+  } catch (error) {
+    console.error('❌ daily-bug failed:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 app.get('/has-completed-bug/:wallet/:bugId', async (req, res) => {
@@ -361,17 +371,6 @@ app.get('/player-progress/:wallet', async (req, res) => {
   }
 });
 
-// Helper function to generate realistic transaction hashes
-// (DEMO MODE only - scheduled for removal with the game wiring batch)
-function generateRealisticTxHash() {
-  const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  let hash = '';
-  for (let i = 0; i < 88; i++) {
-    hash += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return hash;
-}
-
 function getBugDifficulty(bugId) {
   if (bugId === 1) return 'Tutorial';
   if (bugId <= 5) return 'Easy';
@@ -383,7 +382,7 @@ function getBugDifficulty(bugId) {
 const server = app.listen(PORT, () => {
   console.log('━'.repeat(60));
   console.log(`✅ Server running on http://localhost:${PORT}`);
-  console.log(`Mode: ${USE_REAL_BLOCKCHAIN ? 'REAL BLOCKCHAIN' : 'DEMO'}`);
+  console.log('Mode: REAL BLOCKCHAIN');
   console.log('━'.repeat(60));
   console.log('\n📋 Available endpoints:');
   console.log('  GET  /health');

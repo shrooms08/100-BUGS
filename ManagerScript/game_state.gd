@@ -43,9 +43,21 @@ func load_progress():
 		wallet_type = save_data.get("wallet_type", "")
 		last_daily_completed = save_data.get("last_daily_completed", "")
 		
-		# If we have a saved wallet, mark as connected
+		# Reconcile the saved wallet with the live browser wallet. The
+		# extension cannot be silently reconnected, so a saved address does
+		# NOT mean we can sign — only trust it if the live wallet reports the
+		# same address still connected. Otherwise keep the address for display
+		# but leave wallet_connected false so minting doesn't fail silently.
 		if wallet_address != "":
-			wallet_connected = true
+			if OS.has_feature("web"):
+				var raw = JavaScriptBridge.eval(
+					"window.syncWalletState ? window.syncWalletState('%s','%s') : null"
+						% [wallet_address, wallet_type], true)
+				var synced = JSON.parse_string(str(raw)) if raw != null else null
+				wallet_connected = synced != null and synced.get("liveConnected", false)
+			else:
+				# desktop has no browser wallet; treat the saved session as usable
+				wallet_connected = true
 
 func unlock_bug(bug_id: int):
 	if bug_id not in campaign_unlocked_bugs:
@@ -303,14 +315,16 @@ func complete_daily_challenge(bug_id: int):
 	last_daily_completed = today
 	save_progress()
 	
-	# Submit to leaderboard (if API is connected)
+	# Daily leaderboard + daily-NFT minting have no backend yet; these
+	# report "not available" honestly and return false rather than faking
+	# success. Wired up here so the call sites exist for when they land.
 	if wallet_connected:
-		await SolanaManager.submit_daily_completion(bug_id, daily_completion_time)
-		
-		# Mint special daily NFT
 		var tier = get_time_tier(daily_completion_time)
-		await SolanaManager.mint_daily_challenge_nft(bug_id, daily_completion_time, tier)
-	
+		var submitted = await SolanaManager.submit_daily_completion(bug_id, daily_completion_time)
+		var minted = await SolanaManager.mint_daily_challenge_nft(bug_id, daily_completion_time, tier)
+		if not submitted and not minted:
+			print("ℹ️  Daily rewards are not available yet — completion saved locally only")
+
 	is_daily_challenge = false
 
 func has_completed_today() -> bool:
